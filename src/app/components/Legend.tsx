@@ -72,14 +72,12 @@ export default function Legend({
   return (
     <div className={className}>
       {showHeader && (
-        <div className='mb-2 flex items-center gap-2'>
-          <strong className='text-sm'>Legend</strong>
-          <span className='text-xs text-gray-500'>
-            Click to show/hide edge types
-          </span>
+        <div className="mb-2 flex items-center gap-2">
+          <strong className="text-sm">Legend</strong>
+          <span className="text-xs text-gray-500">Click to show/hide edge types</span>
         </div>
       )}
-      <div className='flex flex-wrap gap-2'>
+      <div className="flex flex-wrap gap-2">
         {visible.map(({ type, count }) => {
           const on = active.has(type);
           const color = COLORS[type] ?? '#8b8b8b';
@@ -94,30 +92,29 @@ export default function Legend({
               title={`${labelFor(type)}${showCounts ? ` (${count})` : ''}`}
             >
               <span
-                className='inline-block h-2.5 w-2.5 rounded-full'
+                className="inline-block h-2.5 w-2.5 rounded-full"
                 style={{ backgroundColor: color }}
               />
               {labelFor(type)}
-              {showCounts && <span className='opacity-70'>({count})</span>}
+              {showCounts && <span className="opacity-70">({count})</span>}
             </button>
           );
         })}
       </div>
-      <p className='mt-2 text-xs text-gray-500'>
+      <p className="mt-2 text-xs text-gray-500">
         <span
-          className='inline-block h-2.5 w-2.5 rounded-full align-middle mr-1'
+          className="inline-block h-2.5 w-2.5 rounded-full align-middle mr-1"
           style={{ background: '#ff1493' }}
         />{' '}
         Same Company
-        <span className='mx-2'>•</span>
+        <span className="mx-2">•</span>
         <span
-          className='inline-block h-2.5 w-2.5 rounded-full align-middle mr-1'
+          className="inline-block h-2.5 w-2.5 rounded-full align-middle mr-1"
           style={{ background: '#00ced1' }}
         />{' '}
         Same Title
-        <span className='mx-2'>•</span>
-        Gray = direct connections; colors like blue/green/orange = post
-        interactions.
+        <span className="mx-2">•</span>
+        Gray = direct connections; colors like blue/green/orange = post interactions.
       </p>
     </div>
   );
