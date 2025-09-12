@@ -1,0 +1,39 @@
+name: 🔐 CodeQL
+
+on:
+  push:
+    branches: [main, development]
+    paths: ['src/**', '.github/workflows/codeql.yml']
+  pull_request:
+    branches: [main, development]
+    paths: ['src/**', '.github/workflows/codeql.yml']
+  schedule:
+    - cron: '24 3 * * 2' # weekly Tuesday @03:24 UTC
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  analyze:
+    name: CodeQL Analyze (JS/TS)
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout
+        uses: actions/checkout@v4
+
+      - name: 🧪 Init CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+          # Optional: add more query packs
+          queries: security-extended
+
+      # For JS/TS, autobuild is a no-op (safe to keep)
+      - name: 🏗️ Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: 📊 Analyze
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: '/language:javascript'
