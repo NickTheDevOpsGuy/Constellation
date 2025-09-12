@@ -1,10 +1,11 @@
 // src/app/pages/GraphPage.tsx
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import Toolbar, { type Mode } from '../components/Toolbar';
 import Facets, { type FacetItem } from '../components/Facets';
-import GraphCanvas from '../components/GraphCanvas';
+import GraphCanvas, { type GraphDimension } from '../components/GraphCanvas';
+import GraphDimToggle from '../components/GraphDimToggle';
 import Legend from '../components/Legend';
 import { useLinkMap } from '../hooks/useLinkMap';
 import { rowsToGraph } from '../utils/rowsToGraph';
@@ -97,6 +98,15 @@ export default function GraphPage() {
         'co_title',
       ])
   );
+
+  // Dimension state (2D/3D), persisted in localStorage
+  const [dim, setDim] = useState<GraphDimension>('2d');
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('graph-dimension') as GraphDimension | null;
+      if (saved === '2d' || saved === '3d') setDim(saved);
+    } catch {}
+  }, []);
 
   const q = filterText.toLowerCase();
 
@@ -210,11 +220,11 @@ export default function GraphPage() {
   // early return AFTER hooks
   if (raw.length === 0) {
     return (
-      <div className='text-gray-600'>
+      <div className="text-gray-600">
         No data yet. Go to Import and upload a CSV.
       </div>
     );
-  }
+    }
 
   // facet VMs
   const companyFacets: FacetItem[] = companyCounts
@@ -253,7 +263,7 @@ export default function GraphPage() {
 
   return (
     <div
-      className='w-full grid gap-3'
+      className="w-full grid gap-3"
       style={{
         height: 'calc(100vh - 140px)',
         gridTemplateRows: 'auto auto minmax(420px,1fr) auto',
@@ -263,7 +273,7 @@ export default function GraphPage() {
       {/* toolbar */}
       <div style={{ gridColumn: '1 / span 2' }}>
         <Toolbar
-          className='max-w-none'
+          className="max-w-none"
           filterText={filterText}
           onFilterTextChange={setFilterText}
           fromDate={fromDate}
@@ -278,7 +288,7 @@ export default function GraphPage() {
       </div>
 
       {/* legend */}
-      <div style={{ gridColumn: '1 / span 2' }} className='px-1'>
+      <div style={{ gridColumn: '1 / span 2' }} className="px-1">
         <Legend
           items={legendItems}
           active={activeEdgeTypes}
@@ -290,12 +300,12 @@ export default function GraphPage() {
               return next;
             })
           }
-          className='mt-1'
+          className="mt-1"
         />
       </div>
 
       {/* facets */}
-      <aside className='border rounded p-3 overflow-auto'>
+      <aside className="border rounded p-3 overflow-auto">
         <Facets
           companies={companyFacets}
           titles={titleFacets}
@@ -307,27 +317,37 @@ export default function GraphPage() {
 
       {/* graph */}
       <main
-        className='border rounded overflow-hidden'
+        className="border rounded overflow-hidden"
         style={{ minHeight: 420 }}
       >
-        <div className='h-full' style={{ height: 'var(--graph-height, 66vh)' }}>
-          <GraphCanvas data={finalGraph} groupBy={mode} labelMode='zoom' />
+        <div className="relative h-full" style={{ height: 'var(--graph-height, 66vh)' }}>
+          <GraphCanvas
+            data={finalGraph}
+            groupBy={mode}
+            labelMode="zoom"
+            dimension={dim} // pass 2D/3D
+          />
+
+          {/* toggle using reusable component */}
+          <div className="absolute right-3 top-3 z-10">
+            <GraphDimToggle value={dim} onChange={setDim} />
+          </div>
         </div>
       </main>
 
       {/* table */}
       <section
         style={{ gridColumn: '1 / span 2' }}
-        className='border rounded p-3 overflow-auto'
+        className="border rounded p-3 overflow-auto"
       >
-        <h4 className='text-sm font-semibold mb-2'>Connections</h4>
-        <table className='w-full text-sm border-collapse'>
-          <thead className='bg-gray-50 border-b'>
+        <h4 className="text-sm font-semibold mb-2">Connections</h4>
+        <table className="w-full text-sm border-collapse">
+          <thead className="bg-gray-50 border-b">
             <tr>
-              <th className='px-2 py-1 text-left'>Name</th>
-              <th className='px-2 py-1 text-left'>Company</th>
-              <th className='px-2 py-1 text-left'>Title</th>
-              <th className='px-2 py-1 text-left'>ConnectedOn</th>
+              <th className="px-2 py-1 text-left">Name</th>
+              <th className="px-2 py-1 text-left">Company</th>
+              <th className="px-2 py-1 text-left">Title</th>
+              <th className="px-2 py-1 text-left">ConnectedOn</th>
             </tr>
           </thead>
           <tbody>
@@ -335,14 +355,14 @@ export default function GraphPage() {
               const name =
                 [r.firstName, r.lastName].filter(Boolean).join(' ') || '—';
               return (
-                <tr key={i} className='border-b last:border-0'>
-                  <td className='px-2 py-1'>
+                <tr key={i} className="border-b last:border-0">
+                  <td className="px-2 py-1">
                     {r.url ? (
                       <a
                         href={r.url}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className='text-blue-600 hover:underline'
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline"
                       >
                         {name}
                       </a>
@@ -350,9 +370,9 @@ export default function GraphPage() {
                       name
                     )}
                   </td>
-                  <td className='px-2 py-1'>{r.company ?? '—'}</td>
-                  <td className='px-2 py-1'>{r.title ?? '—'}</td>
-                  <td className='px-2 py-1'>{r.connectedOn ?? '—'}</td>
+                  <td className="px-2 py-1">{r.company ?? '—'}</td>
+                  <td className="px-2 py-1">{r.title ?? '—'}</td>
+                  <td className="px-2 py-1">{r.connectedOn ?? '—'}</td>
                 </tr>
               );
             })}

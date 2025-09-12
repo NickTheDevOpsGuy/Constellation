@@ -17,13 +17,12 @@ export type BuildEdgesInput = {
   }[];
   invitations?: {
     fromId: string; // person.id
-    toId: string; // person.id
+    toId: string;   // person.id
     date?: string;
   }[];
-  enabled: Set<EdgeType>; // which edge types are ON from the legend
+  enabled: Set<EdgeType>;
 };
 
-/** Star-connect nodes within each bucket (hub = first id). */
 function starEdges(
   nodes: PersonNode[],
   keyOf: (n: PersonNode) => string,
@@ -46,32 +45,38 @@ function starEdges(
   return edges;
 }
 
+/** Keep the most recent date */
+function newerDate(a?: string, b?: string) {
+  const ta = a ? Date.parse(a) : NaN;
+  const tb = b ? Date.parse(b) : NaN;
+  if (Number.isNaN(ta)) return b;
+  if (Number.isNaN(tb)) return a;
+  return ta >= tb ? a : b;
+}
+
 export function buildEdges(input: BuildEdgesInput): LinkEdge[] {
   const {
     people,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     posts = [],
     interactions = [],
     invitations = [],
     enabled,
   } = input;
-  const out: LinkEdge[] = [];
 
-  // Inferred person↔person: same company
+  // 1) Collect raw edges
+  const raw: LinkEdge[] = [];
+
   if (enabled.has('co_company')) {
-    out.push(...starEdges(people, (n) => n.company ?? '', 'co_company'));
+    raw.push(...starEdges(people, (n) => n.company ?? '', 'co_company'));
   }
-
-  // Inferred person↔person: same title
   if (enabled.has('co_title')) {
-    out.push(...starEdges(people, (n) => n.title ?? '', 'co_title'));
+    raw.push(...starEdges(people, (n) => n.title ?? '', 'co_title'));
   }
 
-  // Optional: invitations (person↔person)
   if (enabled.has('invited') && invitations.length) {
     for (const inv of invitations) {
       if (!inv.fromId || !inv.toId) continue;
-      out.push({
+      raw.push({
         source: inv.fromId,
         target: inv.toId,
         type: 'invited',
@@ -80,7 +85,6 @@ export function buildEdges(input: BuildEdgesInput): LinkEdge[] {
     }
   }
 
-  // Optional: post interactions (person↔post)
   if (interactions.length) {
     const allowed: EdgeType[] = [
       'authored',
@@ -92,7 +96,7 @@ export function buildEdges(input: BuildEdgesInput): LinkEdge[] {
     for (const ix of interactions) {
       if (!allowed.includes(ix.type)) continue;
       if (!enabled.has(ix.type)) continue;
-      out.push({
+      raw.push({
         source: ix.actorPersonId,
         target: ix.targetPostId,
         type: ix.type,
@@ -101,5 +105,21 @@ export function buildEdges(input: BuildEdgesInput): LinkEdge[] {
     }
   }
 
-  return out;
+  // 2) Aggregate duplicates → set weight, keep most recent date
+  type Key = string;
+  const agg = new Map<Key, LinkEdge & { weight: number }>();
+  const keyOf = (e: LinkEdge) => `${e.source}::${e.type ?? 'connection'}::${e.target}`;
+
+  for (const e of raw) {
+    const k = keyOf(e);
+    const prev = agg.get(k);
+    if (!prev) {
+      agg.set(k, { ...e, weight: 1 });
+    } else {
+      prev.weight += 1;
+      prev.date = newerDate(prev.date, e.date);
+    }
+  }
+
+  return [...agg.values()];
 }
