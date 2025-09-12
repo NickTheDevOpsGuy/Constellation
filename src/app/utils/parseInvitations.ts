@@ -3,7 +3,11 @@ import type { LinkEdge } from '../types/linkedin';
 
 /** Very light CSV parser that handles quoted commas. */
 function parseCsvLoose(text: string): Record<string, string>[] {
-  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').filter(Boolean);
+  const lines = text
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
+    .split('\n')
+    .filter(Boolean);
   if (lines.length === 0) return [];
 
   const split = (line: string) => {
@@ -70,8 +74,12 @@ export function parseInvitations(csvText: string): LinkEdge[] {
     const dstName = (to ?? '').trim();
     if (!srcName && !dstName) continue;
 
-    const source = srcName ? `person:${srcName.toLowerCase()}` : 'person:unknown_src';
-    const target = dstName ? `person:${dstName.toLowerCase()}` : 'person:unknown_dst';
+    const source = srcName
+      ? `person:${srcName.toLowerCase()}`
+      : 'person:unknown_src';
+    const target = dstName
+      ? `person:${dstName.toLowerCase()}`
+      : 'person:unknown_dst';
 
     edges.push({
       source,
