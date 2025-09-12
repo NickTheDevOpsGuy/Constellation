@@ -63,10 +63,38 @@ This means you can safely explore and visualize your network without worrying ab
 
 ## 🗓️ Roadmap
 
-- 🔗 Add edges (grouping by company/title)
-- 🎨 Color & size nodes based on importance (degree, company cluster)
-- 🖱️ Hover interactions (show labels only on hover)
-- 📤 Export stats/graph snapshots for sharing
+- 🌐 **Multi-Dataset Support**  
+  Import and compare multiple LinkedIn exports side-by-side (e.g. personal vs company account).
+
+- 🕵️ **Advanced Analytics**  
+  - Detect clusters/communities automatically (Louvain, modularity, etc.)  
+  - Highlight most central people (betweenness, PageRank, degree centrality)  
+  - Timeline view to see how your network evolves over time
+
+- 🖼️ **Enhanced Visualization**  
+  - Mini-map navigator for large graphs  
+  - “Zoom to node” search (jump directly to a person)  
+  - Improved tooltips with profile photos or richer LinkedIn fields  
+  - Dark mode polish with theme toggle
+
+- 🛠️ **Better Edge Insights**  
+  - Edge weighting by frequency of interaction  
+  - Animate recent edges or fade inactive ones  
+  - Optional curved edges with arrow directions for clarity
+
+- 📤 **Export Options**  
+  - Export filtered views as CSV  
+  - Share interactive web snapshots (hosted HTML, not just PNG/JSON)
+
+- 🔑 **Integration Ideas**  
+  - Supabase / SQLite backend to store imports  
+  - API to query connections programmatically  
+  - Auth to save personal graphs securely in the cloud
+
+- 💡 **Nice-to-Haves**  
+  - Mobile-friendly touch controls  
+  - Keyboard shortcuts (toggle 2D/3D, zoom to fit, quick search)  
+  - “Spotlight” mode: focus + blur everything except one sub-network
 
 ---
 
