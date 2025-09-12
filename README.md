@@ -69,7 +69,6 @@ This means you can safely explore and visualize your network without worrying ab
 - 🕵️ **Advanced Analytics**  
   - Detect clusters/communities automatically (Louvain, modularity, etc.)  
   - Highlight most central people (betweenness, PageRank, degree centrality)  
-  - Timeline view to see how your network evolves over time
 
 - 🖼️ **Enhanced Visualization**  
   - Mini-map navigator for large graphs  
