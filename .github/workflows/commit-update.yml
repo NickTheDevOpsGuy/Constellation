@@ -79,7 +79,7 @@ jobs:
               if (/^refactor(\(|:)/i.test(s)) return '🧹';
               if (/^build(\(|:)/i.test(s)) return '🏗️';
               if (/^style(\(|:)/i.test(s)) return '🎨';
-              return '•';
+              return '🔹'; // default = blue diamond;
             };
 
             const repoUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}`;
