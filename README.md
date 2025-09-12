@@ -91,11 +91,6 @@ This means you can safely explore and visualize your network without worrying ab
   - API to query connections programmatically  
   - Auth to save personal graphs securely in the cloud
 
-- 💡 **Nice-to-Haves**  
-  - Mobile-friendly touch controls  
-  - Keyboard shortcuts (toggle 2D/3D, zoom to fit, quick search)  
-  - “Spotlight” mode: focus + blur everything except one sub-network
-
 ---
 
 ## 🛠 Tech Stack
