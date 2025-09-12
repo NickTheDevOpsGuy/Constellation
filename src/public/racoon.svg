@@ -1,0 +1,34 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 128 128"
+  width="128"
+  height="128"
+  aria-hidden="true"
+>
+  <!-- Head background -->
+  <circle cx="64" cy="64" r="60" fill="#9ca3af" stroke="#111827" stroke-width="4"/>
+
+  <!-- Ears -->
+  <path d="M20 36c-6 12 2 28 12 28 4-10 4-22-12-28z" fill="#6b7280" stroke="#111827" stroke-width="3"/>
+  <path d="M108 36c6 12-2 28-12 28-4-10-4-22 12-28z" fill="#6b7280" stroke="#111827" stroke-width="3"/>
+
+  <!-- Mask -->
+  <ellipse cx="64" cy="72" rx="50" ry="28" fill="#374151"/>
+  
+  <!-- Eyes -->
+  <circle cx="46" cy="70" r="10" fill="#fff"/>
+  <circle cx="82" cy="70" r="10" fill="#fff"/>
+  <circle cx="46" cy="70" r="5" fill="#111827"/>
+  <circle cx="82" cy="70" r="5" fill="#111827"/>
+  <circle cx="44" cy="68" r="2" fill="#fff"/>
+  <circle cx="80" cy="68" r="2" fill="#fff"/>
+
+  <!-- Nose -->
+  <circle cx="64" cy="86" r="6" fill="#111827"/>
+
+  <!-- Smile -->
+  <path d="M50 96c6 6 22 6 28 0" stroke="#111827" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+  <!-- Accent map-pin dot (fun) -->
+  <circle cx="100" cy="32" r="6" fill="#3b82f6"/>
+</svg>
