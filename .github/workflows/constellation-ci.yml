@@ -4,13 +4,6 @@ name: 🗺️ LinkMap — CI (Prettier · ESLint · TSC)
 on:
   push:
   pull_request:
-    paths:
-      - 'Apps/LinkMap/**'
-      # include shared stuff this app depends on (optional)
-      - 'package.json'
-      - 'pnpm-lock.yaml'
-      - 'yarn.lock'
-      - '.github/workflows/linkmap-**'
 
 concurrency:
   group: linkmap-${{ github.ref }}
@@ -23,7 +16,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: Apps/LinkMap
+        working-directory: .
 
     steps:
       - name: ⬇️ Checkout
@@ -34,7 +27,7 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: Apps/LinkMap/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: 📦 Install dependencies
         run: npm ci
