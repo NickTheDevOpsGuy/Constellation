@@ -7,8 +7,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write       # allow committing to same-repo PR branches
-  pull-requests: write  # allow commenting on PRs
+  contents: write # allow committing to same-repo PR branches
+  pull-requests: write # allow commenting on PRs
 
 concurrency:
   group: readme-on-pr-${{ github.event.pull_request.number || github.run_id }}

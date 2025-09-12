@@ -2,13 +2,13 @@ name: 🔐 CodeQL
 
 on:
   push:
-    branches: [ main, development ]
-    paths: [ "src/**", ".github/workflows/codeql.yml" ]
+    branches: [main, development]
+    paths: ['src/**', '.github/workflows/codeql.yml']
   pull_request:
-    branches: [ main, development ]
-    paths: [ "src/**", ".github/workflows/codeql.yml" ]
+    branches: [main, development]
+    paths: ['src/**', '.github/workflows/codeql.yml']
   schedule:
-    - cron: "24 3 * * 2" # weekly Tuesday @03:24 UTC
+    - cron: '24 3 * * 2' # weekly Tuesday @03:24 UTC
 
 permissions:
   contents: read
@@ -36,4 +36,4 @@ jobs:
       - name: 📊 Analyze
         uses: github/codeql-action/analyze@v3
         with:
-          category: "/language:javascript"
+          category: '/language:javascript'
