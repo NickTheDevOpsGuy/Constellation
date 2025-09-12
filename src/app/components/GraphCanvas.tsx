@@ -1,7 +1,12 @@
 // src/app/components/GraphCanvas.tsx
 'use client';
 
-import { edgeColor, hasArrow, isInferred, widthWithWeight } from '../utils/edgeColors';
+import {
+  edgeColor,
+  hasArrow,
+  isInferred,
+  widthWithWeight,
+} from '../utils/edgeColors';
 
 import React, {
   useEffect,
@@ -168,10 +173,7 @@ const GraphCanvas: React.FC<Props> = ({
       val: 3,
     })) as RFNode[];
 
-    const rawLinks: any[] =
-      (data as any)?.edges ??
-      (data as any)?.links ??
-      [];
+    const rawLinks: any[] = (data as any)?.edges ?? (data as any)?.links ?? [];
 
     const normalizedLinks: RFLink[] = rawLinks.map((l: any) => ({
       source: l.source,
@@ -253,8 +255,7 @@ const GraphCanvas: React.FC<Props> = ({
 
       const fontSize = Math.max(12 / scale, 3);
       const pad = 6 / scale;
-      ctx.font =
-        `${fontSize}px system-ui, -apple-system, Segoe UI, Roboto, sans-serif`;
+      ctx.font = `${fontSize}px system-ui, -apple-system, Segoe UI, Roboto, sans-serif`;
       ctx.fillStyle = '#111';
       ctx.textBaseline = 'middle';
       ctx.textAlign = 'left';
@@ -291,17 +292,17 @@ const GraphCanvas: React.FC<Props> = ({
       onMouseMove={onMouseMove}
       className={`relative w-full h-full ${className}`}
     >
-      <div className="absolute inset-0 border rounded overflow-hidden">
+      <div className='absolute inset-0 border rounded overflow-hidden'>
         {want3D ? (
           <ForceGraph3D<RFNode, RFLink>
-            key="fg3d"
+            key='fg3d'
             ref={
               fgRef as unknown as React.MutableRefObject<
                 ForceGraphMethods<RFNode, RFLink> | undefined
               >
             }
             graphData={graph}
-            backgroundColor="#ffffff"
+            backgroundColor='#ffffff'
             nodeAutoColorBy={groupBy}
             nodeRelSize={8}
             linkColor={(l) => EDGE_COLOR(l.type || l.kind || 'connection')}
@@ -320,7 +321,8 @@ const GraphCanvas: React.FC<Props> = ({
               failIfMajorPerformanceCaveat: false,
             }}
             onNodeClick={(node) => {
-              if (isPersonNode(node) && node.url) openInNewTab(String(node.url));
+              if (isPersonNode(node) && node.url)
+                openInNewTab(String(node.url));
             }}
             onNodeHover={(node) => {
               setHoverNode(
@@ -330,14 +332,14 @@ const GraphCanvas: React.FC<Props> = ({
           />
         ) : (
           <ForceGraph2D<RFNode, RFLink>
-            key="fg2d"
+            key='fg2d'
             ref={
               fgRef as unknown as React.MutableRefObject<
                 ForceGraphMethods<RFNode, RFLink> | undefined
               >
             }
             graphData={graph}
-            backgroundColor="#ffffff"
+            backgroundColor='#ffffff'
             nodeRelSize={6}
             nodeAutoColorBy={groupBy}
             nodeCanvasObject={drawNode2D}
@@ -350,7 +352,8 @@ const GraphCanvas: React.FC<Props> = ({
             cooldownTicks={100}
             onEngineStop={() => fgRef.current?.zoomToFit(200, 40)}
             onNodeClick={(node) => {
-              if (isPersonNode(node) && node.url) openInNewTab(String(node.url));
+              if (isPersonNode(node) && node.url)
+                openInNewTab(String(node.url));
             }}
             onNodeHover={(node) => {
               setHoverNode(
@@ -368,15 +371,15 @@ const GraphCanvas: React.FC<Props> = ({
 
       {/* If 3D requested but unavailable, show a badge */}
       {dimension === '3d' && !glOk && (
-        <div className="absolute right-3 top-3 z-10 rounded-md bg-amber-100 text-amber-900 text-xs px-2 py-1 shadow">
+        <div className='absolute right-3 top-3 z-10 rounded-md bg-amber-100 text-amber-900 text-xs px-2 py-1 shadow'>
           WebGL not available — showing 2D
         </div>
       )}
 
       {hoverNode ? (
         <div
-          className="pointer-events-none absolute z-10 max-w-xs rounded-md border bg-white/95 shadow-lg text-xs p-2
-                     dark:bg-gray-900/95 dark:text-gray-100 dark:border-gray-700"
+          className='pointer-events-none absolute z-10 max-w-xs rounded-md border bg-white/95 shadow-lg text-xs p-2
+                     dark:bg-gray-900/95 dark:text-gray-100 dark:border-gray-700'
           style={{
             left: Math.min(
               mouse.x + 14,
@@ -387,9 +390,9 @@ const GraphCanvas: React.FC<Props> = ({
               (wrapRef.current?.clientHeight ?? 0) - 120
             ),
           }}
-          role="tooltip"
+          role='tooltip'
         >
-          <div className="font-semibold">
+          <div className='font-semibold'>
             {hoverNode.name ||
               [hoverNode.firstName, hoverNode.lastName]
                 .filter(Boolean)
@@ -398,26 +401,26 @@ const GraphCanvas: React.FC<Props> = ({
               hoverNode.id}
           </div>
           {(hoverNode.company || hoverNode.title) && (
-            <div className="mt-0.5 text-gray-600 dark:text-gray-300">
+            <div className='mt-0.5 text-gray-600 dark:text-gray-300'>
               {hoverNode.company && <span>{hoverNode.company}</span>}
               {hoverNode.company && hoverNode.title && <span> • </span>}
               {hoverNode.title && <span>{hoverNode.title}</span>}
             </div>
           )}
           {hoverNode.connectedOn && (
-            <div className="mt-0.5 text-gray-500 dark:text-gray-400">
+            <div className='mt-0.5 text-gray-500 dark:text-gray-400'>
               Connected: {hoverNode.connectedOn}
             </div>
           )}
           {Number.isFinite(hoverNode.degree) && (hoverNode.degree ?? 0) > 0 && (
-            <div className="mt-0.5 text-gray-500 dark:text-gray-400">
+            <div className='mt-0.5 text-gray-500 dark:text-gray-400'>
               Degree: {hoverNode.degree}
             </div>
           )}
           {hoverNode.url && (
-            <div className="mt-1">
-              <span className="opacity-70">Profile:</span>{' '}
-              <span className="underline opacity-90">
+            <div className='mt-1'>
+              <span className='opacity-70'>Profile:</span>{' '}
+              <span className='underline opacity-90'>
                 {String(hoverNode.url).replace(/^https?:\/\/(www\.)?/, '')}
               </span>
             </div>

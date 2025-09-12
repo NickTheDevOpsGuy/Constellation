@@ -17,7 +17,7 @@ export type BuildEdgesInput = {
   }[];
   invitations?: {
     fromId: string; // person.id
-    toId: string;   // person.id
+    toId: string; // person.id
     date?: string;
   }[];
   enabled: Set<EdgeType>;
@@ -108,7 +108,8 @@ export function buildEdges(input: BuildEdgesInput): LinkEdge[] {
   // 2) Aggregate duplicates → set weight, keep most recent date
   type Key = string;
   const agg = new Map<Key, LinkEdge & { weight: number }>();
-  const keyOf = (e: LinkEdge) => `${e.source}::${e.type ?? 'connection'}::${e.target}`;
+  const keyOf = (e: LinkEdge) =>
+    `${e.source}::${e.type ?? 'connection'}::${e.target}`;
 
   for (const e of raw) {
     const k = keyOf(e);

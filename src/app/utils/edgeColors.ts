@@ -3,12 +3,12 @@ import type { EdgeType } from '../types/linkedin';
 
 export const EDGE_COLORS: Record<EdgeType | 'default', string> = {
   connection: '#6b7280', // gray-500
-  invited: '#0ea5e9',    // sky-500
-  authored: '#ea580c',   // orange-600
-  commented: '#16a34a',  // green-600
-  liked: '#2563eb',      // blue-600
-  reacted: '#7c3aed',    // violet-600
-  messaged: '#ef4444',   // red-500
+  invited: '#0ea5e9', // sky-500
+  authored: '#ea580c', // orange-600
+  commented: '#16a34a', // green-600
+  liked: '#2563eb', // blue-600
+  reacted: '#7c3aed', // violet-600
+  messaged: '#ef4444', // red-500
   co_company: '#ff1493',
   co_title: '#00ced1',
   default: 'rgba(0,0,0,0.25)',
@@ -41,8 +41,12 @@ export function edgeWidth(t?: EdgeType): number {
 
 /** NEW: arrow-eligible interaction types */
 export const hasArrow = (t?: EdgeType) =>
-  t === 'messaged' || t === 'invited' || t === 'authored' ||
-  t === 'commented' || t === 'liked' || t === 'reacted';
+  t === 'messaged' ||
+  t === 'invited' ||
+  t === 'authored' ||
+  t === 'commented' ||
+  t === 'liked' ||
+  t === 'reacted';
 
 /** NEW: inferred edges (we’ll draw dashed in 2D) */
 export const isInferred = (t?: EdgeType) =>
