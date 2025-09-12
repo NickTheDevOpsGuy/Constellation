@@ -15,7 +15,9 @@ _Visualize your LinkedIn network like a constellation — built with React, Type
 ## 🚀 What’s New
 
 <!-- START:WHATS_NEW -->
+
 _No code changes found in the recent range._
+
 <!-- END:WHATS_NEW -->
 
 ---
@@ -63,31 +65,31 @@ This means you can safely explore and visualize your network without worrying ab
 
 ## 🗓️ Roadmap
 
-- 🌐 **Multi-Dataset Support**  
+- 🌐 **Multi-Dataset Support**
   - Import and compare multiple LinkedIn exports side-by-side (e.g. personal vs company account).
 
-- 🕵️ **Advanced Analytics**  
-  - Detect clusters/communities automatically (Louvain, modularity, etc.)  
-  - Highlight most central people (betweenness, PageRank, degree centrality)  
+- 🕵️ **Advanced Analytics**
+  - Detect clusters/communities automatically (Louvain, modularity, etc.)
+  - Highlight most central people (betweenness, PageRank, degree centrality)
 
-- 🖼️ **Enhanced Visualization**  
-  - Mini-map navigator for large graphs  
-  - “Zoom to node” search (jump directly to a person)  
-  - Improved tooltips with profile photos or richer LinkedIn fields  
+- 🖼️ **Enhanced Visualization**
+  - Mini-map navigator for large graphs
+  - “Zoom to node” search (jump directly to a person)
+  - Improved tooltips with profile photos or richer LinkedIn fields
   - Dark mode polish with theme toggle
 
-- 🛠️ **Better Edge Insights**  
-  - Edge weighting by frequency of interaction  
-  - Animate recent edges or fade inactive ones  
+- 🛠️ **Better Edge Insights**
+  - Edge weighting by frequency of interaction
+  - Animate recent edges or fade inactive ones
   - Optional curved edges with arrow directions for clarity
 
-- 📤 **Export Options**  
-  - Export filtered views as CSV  
+- 📤 **Export Options**
+  - Export filtered views as CSV
   - Share interactive web snapshots (hosted HTML, not just PNG/JSON)
 
-- 🔑 **Integration Ideas**  
-  - Supabase / SQLite backend to store imports  
-  - API to query connections programmatically  
+- 🔑 **Integration Ideas**
+  - Supabase / SQLite backend to store imports
+  - API to query connections programmatically
   - Auth to save personal graphs securely in the cloud
 
 ---

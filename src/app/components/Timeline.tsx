@@ -48,8 +48,11 @@ export default function Timeline({
     if (!months.length) return;
     const end = months[Math.max(0, months.length - 1)];
     const [ey, em] = end.split('-').map(Number);
-    const endDate = new Date(ey, (em - 1) + 1, 0); // end of month
-    const startDate = addMonths(new Date(ey, em - 1, 1), -initialWindowMonths + 1);
+    const endDate = new Date(ey, em - 1 + 1, 0); // end of month
+    const startDate = addMonths(
+      new Date(ey, em - 1, 1),
+      -initialWindowMonths + 1
+    );
     onChange({
       from: startDate.toISOString().slice(0, 10),
       to: endDate.toISOString().slice(0, 10),
@@ -63,8 +66,11 @@ export default function Timeline({
     if (!months.length) return;
     const end = months[i];
     const [ey, em] = end.split('-').map(Number);
-    const endDate = new Date(ey, (em - 1) + 1, 0);
-    const startDate = addMonths(new Date(ey, em - 1, 1), -initialWindowMonths + 1);
+    const endDate = new Date(ey, em - 1 + 1, 0);
+    const startDate = addMonths(
+      new Date(ey, em - 1, 1),
+      -initialWindowMonths + 1
+    );
     onChange({
       from: startDate.toISOString().slice(0, 10),
       to: endDate.toISOString().slice(0, 10),
@@ -81,30 +87,34 @@ export default function Timeline({
   }, [playing, months.length]);
 
   if (months.length === 0) {
-    return <div className="text-sm text-gray-500">No dates available for timeline</div>;
+    return (
+      <div className='text-sm text-gray-500'>
+        No dates available for timeline
+      </div>
+    );
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className='flex items-center gap-2'>
       <button
-        type="button"
+        type='button'
         onClick={() => setPlaying((p) => !p)}
-        className="rounded border px-2 py-1 text-xs"
+        className='rounded border px-2 py-1 text-xs'
         aria-pressed={playing}
       >
         {playing ? 'Pause' : 'Play'}
       </button>
 
       <input
-        type="range"
+        type='range'
         min={0}
         max={months.length - 1}
         value={i}
         onChange={(e) => setI(Number(e.target.value))}
-        className="w-64"
+        className='w-64'
       />
 
-      <div className="text-xs tabular-nums">{months[i]}</div>
+      <div className='text-xs tabular-nums'>{months[i]}</div>
     </div>
   );
 }
