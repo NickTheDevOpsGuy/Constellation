@@ -1,5 +1,10 @@
 // src/app/utils/edgeBuilders.ts
-import type { EdgeType, LinkEdge, PersonNode, PostNode } from '../types/linkedin';
+import type {
+  EdgeType,
+  LinkEdge,
+  PersonNode,
+  PostNode,
+} from '../types/linkedin';
 
 export type BuildEdgesInput = {
   people: PersonNode[];
@@ -22,7 +27,7 @@ export type BuildEdgesInput = {
 function starEdges(
   nodes: PersonNode[],
   keyOf: (n: PersonNode) => string,
-  type: EdgeType,
+  type: EdgeType
 ): LinkEdge[] {
   const buckets = new Map<string, string[]>();
   for (const n of nodes) {
@@ -77,7 +82,13 @@ export function buildEdges(input: BuildEdgesInput): LinkEdge[] {
 
   // Optional: post interactions (person↔post)
   if (interactions.length) {
-    const allowed: EdgeType[] = ['authored', 'commented', 'liked', 'reacted', 'messaged'];
+    const allowed: EdgeType[] = [
+      'authored',
+      'commented',
+      'liked',
+      'reacted',
+      'messaged',
+    ];
     for (const ix of interactions) {
       if (!allowed.includes(ix.type)) continue;
       if (!enabled.has(ix.type)) continue;
