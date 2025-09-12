@@ -14,7 +14,7 @@ export default function NavBar() {
   return (
     <nav className='flex items-center gap-6'>
       <NavLink to='/' className='font-semibold text-lg flex items-center gap-2'>
-        <span>🦝</span> <span>Link Map</span>
+        <span>🦝</span> <span>Constellation</span>
       </NavLink>
       <NavLink to='/' className={link}>
         Import

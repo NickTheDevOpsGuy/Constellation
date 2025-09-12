@@ -1,0 +1,30 @@
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Constellation icon">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#60a5fa"/>
+      <stop offset="100%" stop-color="#a78bfa"/>
+    </linearGradient>
+    <style>
+      .bg{fill:#0b1020}
+      .node{fill:url(#g)}
+      .edge{stroke:#94a3b8;stroke-width:3;stroke-linecap:round;opacity:.8}
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="256" height="256" rx="28"/>
+  
+  <!-- compact constellation -->
+  <line class="edge" x1="60" y1="70" x2="88" y2="44"/>
+  <line class="edge" x1="88" y1="44" x2="116" y2="70"/>
+  <line class="edge" x1="140" y1="70" x2="168" y2="44"/>
+  <line class="edge" x1="168" y1="44" x2="196" y2="70"/>
+  <line class="edge" x1="96" y1="110" x2="160" y2="110"/>
+  <line class="edge" x1="96" y1="110" x2="128" y2="150"/>
+  <line class="edge" x1="160" y1="110" x2="128" y2="150"/>
+  
+  <!-- nodes -->
+  <circle class="node" cx="88" cy="44" r="6"/><circle class="node" cx="168" cy="44" r="6"/>
+  <circle class="node" cx="60" cy="70" r="5"/><circle class="node" cx="116" cy="70" r="5"/>
+  <circle class="node" cx="140" cy="70" r="5"/><circle class="node" cx="196" cy="70" r="5"/>
+  <circle class="node" cx="96" cy="110" r="6"/><circle class="node" cx="160" cy="110" r="6"/><circle class="node" cx="128" cy="150" r="6"/>
+  <circle class="node" cx="114" cy="124" r="4"/><circle class="node" cx="142" cy="124" r="4"/>
+</svg>
