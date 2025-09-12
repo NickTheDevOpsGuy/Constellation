@@ -12,6 +12,13 @@ _Visualize your LinkedIn network like a constellation — built with React, Type
 
 ---
 
+## 🚀 What’s New
+<!-- START:WHATS_NEW -->
+- • Fixing some syntanx issues' ([6aa6d6f](https://github.com/v-gajjar/Minesweeper/commit/6aa6d6f5ed8611ac26529013788cfdaf144af695))
+<!-- END:WHATS_NEW -->
+
+---
+
 ## 🚀 Features
 
 - 📥 **Import CSV**  
@@ -110,8 +117,9 @@ Clone the repo and install dependencies:
 │   │   ├── bug_report.md
 │   │   └── feature_request.md
 │   └── workflows
-│       ├── linkmap-ci.yml
-│       └── todo-ci.yml
+│       ├── codeql.yml
+│       ├── commit-update.yml
+│       └── constellation-ci.yml
 ├── .gitignore
 ├── .prettierignore
 ├── .prettierrc.json
