@@ -1,7 +1,11 @@
-# 🦝 LinkedIn Graph Mapper
+# 🌌 Constellation  
 
-Turn your LinkedIn connections CSV into something more visual and insightful!  
-This app is built with **React + TypeScript + Vite + TailwindCSS** and is still a work-in-progress, but already packs some useful features.
+*Visualize your LinkedIn network like a constellation — built with React, TypeScript, and TailwindCSS.* 🦝
+
+[![CI](https://github.com/NickTheDevOpsGuy/Constellation/actions/workflows/ci.yml/badge.svg)](…)
+![Built with React](https://img.shields.io/badge/Built%20with-React-61dafb?logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178c6?logo=typescript&logoColor=white)
+![Contributions welcome](https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg)
 
 ---
 
@@ -230,9 +234,7 @@ Built with 💻 by [Nicholas Clark](https://www.linkedin.com/in/nickdoesdevops)
 
 - Follow the journey: #NickDoesDevOPS
 
-🧠 #NickDoesDevOps
-🚀 #LearningInPublic
-🔧 #WorldDominations
+🧠 #NickDoesDevOps • 🚀 #LearningInPublic • 🔧 #WorldDomination
 
 - GitHub: [NickTheDevOpsGuy](https://github.com/NickTheDevOpsGuy)
 
