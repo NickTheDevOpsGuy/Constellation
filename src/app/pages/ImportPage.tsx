@@ -6,7 +6,14 @@ import { useLinkMap } from '../hooks/useLinkMap';
 import { extractCsvFromFile } from '../utils/extractFromZip';
 
 export default function ImportPage() {
-  const { raw, isLoading, loadRaw, loadPosts, loadInteractions, loadInvitations } = useLinkMap();
+  const {
+    raw,
+    isLoading,
+    loadRaw,
+    loadPosts,
+    loadInteractions,
+    loadInvitations,
+  } = useLinkMap();
   const navigate = useNavigate();
   const didRouteRef = useRef(false);
 
@@ -41,7 +48,11 @@ export default function ImportPage() {
 
   return (
     <div>
-      <FileDrop onText={handleCsvText} onFile={handleFile} isLoading={isLoading} />
+      <FileDrop
+        onText={handleCsvText}
+        onFile={handleFile}
+        isLoading={isLoading}
+      />
     </div>
   );
 }
