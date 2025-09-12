@@ -2,7 +2,7 @@
 
 _Visualize your LinkedIn network like a constellation — built with React, TypeScript, and TailwindCSS._ 🦝
 
-[![CI](https://github.com/NickTheDevOpsGuy/Constellation/actions/workflows/ci.yml/badge.svg)](https://github.com/NickTheDevOpsGuy/Constellation/actions/workflows/ci.yml)
+[![CI](https://github.com/NickTheDevOpsGuy/Constellation/actions/workflows/ci.yml/badge.svg)](https://github.com/NickTheDevOpsGuy/Constellation/actions/workflows/constellation-ci.yml)
 ![Built with React](https://img.shields.io/badge/Built%20with-React-61dafb?logo=react&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178c6?logo=typescript&logoColor=white)
 ![Contributions welcome](https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg)
