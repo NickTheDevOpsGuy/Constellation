@@ -75,19 +75,10 @@ This means you can safely explore and visualize your network without worrying ab
 
 Clone the repo and install dependencies:
 
-```bash
-git clone git@github.com:NickTheDevOpsGuy/React.git
-cd Apps/LinkMap
-npm i
-```
-
-Run the dev server:
-
-```bash
-npm run dev
-```
-
-Then open http://localhost:5173 in your browser.
+1. Clone repo: `git clone …`
+2. Install deps: `npm install`
+3. Start dev: `npm run dev`
+4. Then open `http://localhost:5173` in your browser.
 
 ---
 
@@ -114,10 +105,17 @@ Then open http://localhost:5173 in your browser.
 
 ```plaintext
 .
+├── .github
+│   ├── ISSUE_TEMPLATE
+│   │   ├── bug_report.md
+│   │   └── feature_request.md
+│   └── workflows
+│       ├── linkmap-ci.yml
+│       └── todo-ci.yml
 ├── .gitignore
-├── .husky
-│   └── pre-commit
+├── .prettierignore
 ├── .prettierrc.json
+├── .prettierrc.yml
 ├── eslint.config.js
 ├── index.html
 ├── package-lock.json
@@ -129,7 +127,6 @@ Then open http://localhost:5173 in your browser.
 │   └── stats.png
 ├── scripts
 │   └── precheck.sh
-│   └── pre-push.sh
 ├── src
 │   ├── app
 │   │   ├── components
@@ -168,10 +165,11 @@ Then open http://localhost:5173 in your browser.
 │   │       ├── summarize.ts
 │   │       └── time.ts
 │   └── public
-│       └── racoon.svg
+│       └── constellation.svg
 ├── tailwind.config.ts
 ├── tsconfig.app.json
 ├── tsconfig.json
+└── vite.config.ts
 ```
 
 </details>

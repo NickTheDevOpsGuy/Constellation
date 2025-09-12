@@ -48,9 +48,9 @@ function buildSummary(rows: LinkedInRawRecord[]): PanelSummary {
 
 function Stat({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div className='flex flex-col items-start bg-white border rounded-lg p-4 shadow-sm'>
-      <div className='text-xs text-gray-500'>{label}</div>
-      <div className='text-xl font-semibold'>{value ?? '—'}</div>
+    <div className="flex flex-col items-start bg-white border rounded-lg p-4 shadow-sm">
+      <div className="text-xs text-gray-500">{label}</div>
+      <div className="text-xl font-semibold">{value ?? '—'}</div>
     </div>
   );
 }
@@ -61,24 +61,16 @@ export default function StatsPanel() {
   const stats = useMemo<PanelSummary>(() => buildSummary(raw), [raw]);
 
   if (raw.length === 0) {
-    return (
-      <p className='text-gray-600'>
-        No data yet. Go to Import and upload a CSV/ZIP.
-      </p>
-    );
+    return <p className="text-gray-600">No data yet. Go to Import and upload a CSV/ZIP.</p>;
   }
 
   return (
-    <div className='mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4'>
-      <Stat label='Total Connections' value={stats.total} />
-      <Stat label='Unique Companies' value={stats.uniqueCompanies} />
-      <Stat label='Unique Titles' value={stats.uniqueTitles} />
-      {stats.firstDate && (
-        <Stat label='Earliest Connection' value={stats.firstDate} />
-      )}
-      {stats.lastDate && (
-        <Stat label='Latest Connection' value={stats.lastDate} />
-      )}
+    <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4">
+      <Stat label="Total Connections" value={stats.total} />
+      <Stat label="Unique Companies" value={stats.uniqueCompanies} />
+      <Stat label="Unique Titles" value={stats.uniqueTitles} />
+      {stats.firstDate && <Stat label="Earliest Connection" value={stats.firstDate} />}
+      {stats.lastDate && <Stat label="Latest Connection" value={stats.lastDate} />}
     </div>
   );
 }
