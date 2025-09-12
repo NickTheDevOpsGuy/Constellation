@@ -1,5 +1,10 @@
 // src/app/utils/quickFilterGraph.ts
-import type { GraphData, PersonNode, LinkEdge, PostNode } from '../types/linkedin';
+import type {
+  GraphData,
+  PersonNode,
+  LinkEdge,
+  PostNode,
+} from '../types/linkedin';
 import { ts } from './time';
 
 export type QuickFilterOpts = {
@@ -18,7 +23,10 @@ function isPerson(n: PersonNode | PostNode): n is PersonNode {
   return n.kind === 'person';
 }
 
-export function quickFilterGraph(raw: GraphData, opts: QuickFilterOpts): GraphData {
+export function quickFilterGraph(
+  raw: GraphData,
+  opts: QuickFilterOpts
+): GraphData {
   const {
     q = '',
     from,
@@ -61,7 +69,8 @@ export function quickFilterGraph(raw: GraphData, opts: QuickFilterOpts): GraphDa
   let nodes = peopleNodes.filter((n) => textMatch(n) && dateMatch(n));
 
   // --- 2) Group filtering (company/title) ---
-  const keyOf = (n: PersonNode) => (mode === 'company' ? n.company : n.title) ?? '';
+  const keyOf = (n: PersonNode) =>
+    (mode === 'company' ? n.company : n.title) ?? '';
   if (minGroup > 1 || (topKGroups && topKGroups > 0)) {
     const counts = new Map<string, number>();
     for (const n of nodes) {
@@ -94,7 +103,7 @@ export function quickFilterGraph(raw: GraphData, opts: QuickFilterOpts): GraphDa
 
   // --- 3) Edge filtering: keep only edges between kept nodes ---
   let edges = (raw.edges ?? []).filter(
-    (e) => keep.has(String(e.source)) && keep.has(String(e.target)),
+    (e) => keep.has(String(e.source)) && keep.has(String(e.target))
   ) as LinkEdge[];
 
   // Optionally drop isolates
@@ -108,7 +117,9 @@ export function quickFilterGraph(raw: GraphData, opts: QuickFilterOpts): GraphDa
     }
     nodes = nodes.filter((n) => (deg.get(n.id) ?? 0) > 0);
     const keep2 = new Set(nodes.map((n) => n.id));
-    edges = edges.filter((e) => keep2.has(String(e.source)) && keep2.has(String(e.target)));
+    edges = edges.filter(
+      (e) => keep2.has(String(e.source)) && keep2.has(String(e.target))
+    );
   }
 
   return { nodes, edges };
