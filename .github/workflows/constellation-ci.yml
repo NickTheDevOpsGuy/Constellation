@@ -33,7 +33,11 @@ jobs:
         run: npm ci
 
       - name: 🎨 Prettier — check formatting
-        run: npx prettier . --check
+        run: |
+          npx prettier \
+          --config .prettierrc.yml \
+          --check . \
+          --ignore-path .prettierignore
 
       - name: ✨ ESLint — lint code
         run: npx eslint . --max-warnings=0
