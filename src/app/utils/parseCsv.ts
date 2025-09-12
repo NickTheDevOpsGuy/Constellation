@@ -11,7 +11,9 @@ function safe(val: unknown): string {
 function stripPreamble(text: string): string {
   const noBom = text.replace(/^\uFEFF/, '');
   const lines = noBom.split(/\r?\n/);
-  const headerIdx = lines.findIndex((l) => /first\s*name/i.test(l) && /last\s*name/i.test(l));
+  const headerIdx = lines.findIndex(
+    (l) => /first\s*name/i.test(l) && /last\s*name/i.test(l)
+  );
   return headerIdx === -1 ? noBom : lines.slice(headerIdx).join('\n');
 }
 
@@ -29,18 +31,25 @@ function normalizeLinkedInUrl(raw?: string): string | undefined {
   }
   try {
     const url = new URL(u);
-    if (url.hostname.endsWith('linkedin.com') && url.hostname !== 'www.linkedin.com') {
+    if (
+      url.hostname.endsWith('linkedin.com') &&
+      url.hostname !== 'www.linkedin.com'
+    ) {
       url.hostname = 'www.linkedin.com';
     }
     return url.toString();
   } catch {
-    if (/linkedin\.com/i.test(u)) return `https://${u.replace(/^https?:\/\//i, '')}`;
+    if (/linkedin\.com/i.test(u))
+      return `https://${u.replace(/^https?:\/\//i, '')}`;
     return undefined;
   }
 }
 
 /** Returns the first non-empty value from candidate keys */
-function pickFirst(obj: Record<string, unknown>, keys: string[]): string | undefined {
+function pickFirst(
+  obj: Record<string, unknown>,
+  keys: string[]
+): string | undefined {
   for (const k of keys) {
     const v = safe(obj[k]);
     if (v) return v;
@@ -67,8 +76,10 @@ export function parseCsv(text: string): LinkedInRawRecord[] {
 
   const rows: LinkedInRawRecord[] = (data as Record<string, unknown>[])
     .map((r) => {
-      const firstName = pickFirst(r, ['First Name', 'FirstName', 'firstName']) ?? '';
-      const lastName = pickFirst(r, ['Last Name', 'LastName', 'lastName']) ?? '';
+      const firstName =
+        pickFirst(r, ['First Name', 'FirstName', 'firstName']) ?? '';
+      const lastName =
+        pickFirst(r, ['Last Name', 'LastName', 'lastName']) ?? '';
       const company = pickFirst(r, ['Company', 'Company Name', 'company']);
       const title = pickFirst(r, [
         'Position',
@@ -78,7 +89,11 @@ export function parseCsv(text: string): LinkedInRawRecord[] {
         'title',
         'position',
       ]);
-      const connectedOn = pickFirst(r, ['Connected On', 'connectedOn', 'ConnectedOn']);
+      const connectedOn = pickFirst(r, [
+        'Connected On',
+        'connectedOn',
+        'ConnectedOn',
+      ]);
       const url = normalizeLinkedInUrl(
         pickFirst(r, [
           'URL',
@@ -91,7 +106,7 @@ export function parseCsv(text: string): LinkedInRawRecord[] {
           'Url',
           'profileUrl',
           'url',
-        ]),
+        ])
       );
 
       return { firstName, lastName, company, title, connectedOn, url };
