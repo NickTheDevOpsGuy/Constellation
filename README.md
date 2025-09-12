@@ -15,8 +15,7 @@ _Visualize your LinkedIn network like a constellation — built with React, Type
 ## 🚀 What’s New
 
 <!-- START:WHATS_NEW -->
-
-- • Fixing some syntanx issues' ([6aa6d6f](https://github.com/v-gajjar/Minesweeper/commit/6aa6d6f5ed8611ac26529013788cfdaf144af695))
+_No code changes found in the recent range._
 <!-- END:WHATS_NEW -->
 
 ---

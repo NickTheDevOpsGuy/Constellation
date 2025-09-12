@@ -18,6 +18,7 @@ export function edgeColor(t?: EdgeType): string {
   return (t && EDGE_COLORS[t]) || EDGE_COLORS.default;
 }
 
+/** base width by type (no weight) */
 export function edgeWidth(t?: EdgeType): number {
   switch (t) {
     case 'authored':
@@ -37,3 +38,23 @@ export function edgeWidth(t?: EdgeType): number {
       return 1.0;
   }
 }
+
+/** NEW: arrow-eligible interaction types */
+export const hasArrow = (t?: EdgeType) =>
+  t === 'messaged' ||
+  t === 'invited' ||
+  t === 'authored' ||
+  t === 'commented' ||
+  t === 'liked' ||
+  t === 'reacted';
+
+/** NEW: inferred edges (we’ll draw dashed in 2D) */
+export const isInferred = (t?: EdgeType) =>
+  t === 'co_company' || t === 'co_title';
+
+/** NEW: weight-aware width scaling */
+export const widthWithWeight = (t?: EdgeType, weight?: number) => {
+  const base = edgeWidth(t);
+  const w = Number(weight ?? 1);
+  return Math.min(6, base * (1 + Math.log2(w + 1) * 0.6));
+};

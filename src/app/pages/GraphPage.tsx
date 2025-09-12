@@ -1,10 +1,11 @@
 // src/app/pages/GraphPage.tsx
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import Toolbar, { type Mode } from '../components/Toolbar';
 import Facets, { type FacetItem } from '../components/Facets';
-import GraphCanvas from '../components/GraphCanvas';
+import GraphCanvas, { type GraphDimension } from '../components/GraphCanvas';
+import GraphDimToggle from '../components/GraphDimToggle';
 import Legend from '../components/Legend';
 import { useLinkMap } from '../hooks/useLinkMap';
 import { rowsToGraph } from '../utils/rowsToGraph';
@@ -97,6 +98,17 @@ export default function GraphPage() {
         'co_title',
       ])
   );
+
+  // Dimension state (2D/3D), persisted in localStorage
+  const [dim, setDim] = useState<GraphDimension>('2d');
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(
+        'graph-dimension'
+      ) as GraphDimension | null;
+      if (saved === '2d' || saved === '3d') setDim(saved);
+    } catch {}
+  }, []);
 
   const q = filterText.toLowerCase();
 
@@ -310,8 +322,21 @@ export default function GraphPage() {
         className='border rounded overflow-hidden'
         style={{ minHeight: 420 }}
       >
-        <div className='h-full' style={{ height: 'var(--graph-height, 66vh)' }}>
-          <GraphCanvas data={finalGraph} groupBy={mode} labelMode='zoom' />
+        <div
+          className='relative h-full'
+          style={{ height: 'var(--graph-height, 66vh)' }}
+        >
+          <GraphCanvas
+            data={finalGraph}
+            groupBy={mode}
+            labelMode='zoom'
+            dimension={dim} // pass 2D/3D
+          />
+
+          {/* toggle using reusable component */}
+          <div className='absolute right-3 top-3 z-10'>
+            <GraphDimToggle value={dim} onChange={setDim} />
+          </div>
         </div>
       </main>
 
