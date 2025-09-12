@@ -66,7 +66,6 @@ This means you can safely explore and visualize your network without worrying ab
 - 🔗 Add edges (grouping by company/title)
 - 🎨 Color & size nodes based on importance (degree, company cluster)
 - 🖱️ Hover interactions (show labels only on hover)
-- ⚡ Switch to a force-directed layout with d3-force for larger graphs
 - 📤 Export stats/graph snapshots for sharing
 
 ---
