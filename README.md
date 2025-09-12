@@ -1,6 +1,6 @@
-# 🌌 Constellation  
+# 🌌 Constellation
 
-*Visualize your LinkedIn network like a constellation — built with React, TypeScript, and TailwindCSS.* 🦝
+_Visualize your LinkedIn network like a constellation — built with React, TypeScript, and TailwindCSS._ 🦝
 
 [![CI](https://github.com/NickTheDevOpsGuy/Constellation/actions/workflows/ci.yml/badge.svg)](…)
 ![Built with React](https://img.shields.io/badge/Built%20with-React-61dafb?logo=react&logoColor=white)
