@@ -64,7 +64,7 @@ This means you can safely explore and visualize your network without worrying ab
 ## 🗓️ Roadmap
 
 - 🌐 **Multi-Dataset Support**  
-  Import and compare multiple LinkedIn exports side-by-side (e.g. personal vs company account).
+  - Import and compare multiple LinkedIn exports side-by-side (e.g. personal vs company account).
 
 - 🕵️ **Advanced Analytics**  
   - Detect clusters/communities automatically (Louvain, modularity, etc.)  
