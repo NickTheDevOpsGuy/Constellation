@@ -7,6 +7,7 @@ import Facets, { type FacetItem } from '../components/Facets';
 import GraphCanvas, { type GraphDimension } from '../components/GraphCanvas';
 import GraphDimToggle from '../components/GraphDimToggle';
 import Legend from '../components/Legend';
+import Timeline from '../components/Timeline'; // ⬅️ NEW
 import { useLinkMap } from '../hooks/useLinkMap';
 import { rowsToGraph } from '../utils/rowsToGraph';
 import { quickFilterGraph } from '../utils/quickFilterGraph';
@@ -156,6 +157,17 @@ export default function GraphPage() {
     [baseRows, mode]
   );
 
+  // ⬇️ NEW: collect all dates for the timeline (connections + any edge dates)
+  const allDates = useMemo(() => {
+    const ds: string[] = [];
+    for (const r of raw) if (r.connectedOn) ds.push(r.connectedOn);
+    for (const e of baseGraph.edges ?? []) {
+      const anyE = e as any;
+      if (anyE?.date) ds.push(anyE.date as string);
+    }
+    return ds;
+  }, [raw, baseGraph.edges]);
+
   // E) thin graph
   const thinned = useMemo(
     () =>
@@ -268,7 +280,7 @@ export default function GraphPage() {
       className='w-full grid gap-3'
       style={{
         height: 'calc(100vh - 140px)',
-        gridTemplateRows: 'auto auto minmax(420px,1fr) auto',
+        gridTemplateRows: 'auto auto auto minmax(420px,1fr) auto', // ⬅️ extra row for timeline
         gridTemplateColumns: '280px 1fr',
       }}
     >
@@ -286,6 +298,21 @@ export default function GraphPage() {
           onMinSizeChange={setMinGroup}
           mode={mode}
           onModeChange={setMode}
+        />
+      </div>
+
+      {/* ⬇️ NEW timeline row */}
+      <div
+        style={{ gridColumn: '1 / span 2' }}
+        className='px-1 -mt-2 flex items-center gap-3'
+      >
+        <Timeline
+          dates={allDates}
+          onChange={({ from, to }) => {
+            setFromDate(from);
+            setToDate(to);
+          }}
+          initialWindowMonths={3}
         />
       </div>
 

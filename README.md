@@ -144,6 +144,27 @@ Clone the repo and install dependencies:
 │       ├── commit-update.yml
 │       └── constellation-ci.yml
 ├── .gitignore
+├── .husky
+│   ├── _
+│   │   ├── .gitignore
+│   │   ├── applypatch-msg
+│   │   ├── commit-msg
+│   │   ├── h
+│   │   ├── husky.sh
+│   │   ├── post-applypatch
+│   │   ├── post-checkout
+│   │   ├── post-commit
+│   │   ├── post-merge
+│   │   ├── post-rewrite
+│   │   ├── pre-applypatch
+│   │   ├── pre-auto-gc
+│   │   ├── pre-commit
+│   │   ├── pre-merge-commit
+│   │   ├── pre-push
+│   │   ├── pre-rebase
+│   │   └── prepare-commit-msg
+│   ├── pre-commit
+│   └── pre-push
 ├── .prettierignore
 ├── .prettierrc.json
 ├── .prettierrc.yml
@@ -165,11 +186,13 @@ Clone the repo and install dependencies:
 │   │   │   ├── Facets.tsx
 │   │   │   ├── FileDrop.tsx
 │   │   │   ├── GraphCanvas.tsx
+│   │   │   ├── GraphDimToggle.tsx
 │   │   │   ├── Layout.tsx
 │   │   │   ├── Legend.tsx
 │   │   │   ├── NavBar.tsx
 │   │   │   ├── StatsPanel.tsx
 │   │   │   ├── StatsToolbar.tsx
+│   │   │   ├── Timeline.tsx
 │   │   │   └── Toolbar.tsx
 │   │   ├── hooks
 │   │   │   └── useLinkMap.ts
