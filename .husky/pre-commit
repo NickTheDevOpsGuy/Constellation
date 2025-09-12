@@ -1,7 +1,4 @@
 #!/bin/bash
-# Prevent committing secrets
-echo "✅ Pre-commit hook ran"
-
 # Check for empty files in staged changes
 echo "📂 Checking for empty files in staged and untracked changes..."
 
