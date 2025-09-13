@@ -1,124 +1,142 @@
 // src/app/components/Legend.tsx
 'use client';
+
 import React from 'react';
+import { schemeTableau10 } from 'd3-scale-chromatic';
 import type { EdgeType } from '../types/linkedin';
 
-const COLORS: Record<EdgeType, string> = {
+export type LegendItem = { type: EdgeType | string; count: number };
+
+type Props = {
+  items: LegendItem[];
+  active: Set<EdgeType | string>;
+  onToggle: (t: EdgeType | string) => void;
+  className?: string;
+
+  communityCounts?: Array<{ communityId: number; count: number }>;
+  communityTitle?: string;
+};
+
+const EDGE_COLOR: Record<string, string> = {
   connection: '#8b8b8b',
+  invited: '#d62728',
   authored: '#1f77b4',
   commented: '#2ca02c',
   liked: '#ff7f0e',
   reacted: '#9467bd',
-  invited: '#d62728',
   messaged: '#17becf',
-  co_company: '#ff1493', // Same Company
-  co_title: '#00ced1', // Same Title
+  co_company: '#ff1493',
+  co_title: '#00ced1',
 };
 
-function labelFor(t: EdgeType) {
-  switch (t) {
-    case 'connection':
-      return 'Connection';
-    case 'authored':
-      return 'Authored (person → post)';
-    case 'commented':
-      return 'Commented (person → post)';
-    case 'liked':
-      return 'Liked (person → post)';
-    case 'reacted':
-      return 'Reacted (person → post)';
-    case 'invited':
-      return 'Invited (person → person)';
-    case 'messaged':
-      return 'Messaged (person → person)';
-    case 'co_company':
-      return 'Same Company (inferred)';
-    case 'co_title':
-      return 'Same Title (inferred)';
-    default:
-      return t;
-  }
+// ✅ Always map via string keys (robust to typing)
+const EDGE_LABEL: Record<string, string> = {
+  connection: 'Direct Connection',
+  invited: 'Invitation Sent',
+  authored: 'Authored Post',
+  commented: 'Commented',
+  liked: 'Liked',
+  reacted: 'Reacted',
+  messaged: 'Messaged',
+  co_company: 'Same Company',
+  co_title: 'Same Title',
+};
+
+const COMMUNITY_PALETTE = schemeTableau10 as string[];
+const colorForCommunityId = (id: number) =>
+  COMMUNITY_PALETTE[id % COMMUNITY_PALETTE.length] ?? '#999';
+
+function Swatch({ color }: { color: string }) {
+  return (
+    <span
+      aria-hidden
+      className='inline-block align-middle rounded-sm'
+      style={{
+        width: 10,
+        height: 10,
+        backgroundColor: color,
+        boxShadow: '0 0 0 1px rgba(0,0,0,0.25) inset',
+        marginRight: 6,
+      }}
+    />
+  );
 }
-
-type LegendItem = { type: EdgeType; count: number };
-
-type Props = {
-  items: LegendItem[]; // types present in the current view (+ counts)
-  active: Set<EdgeType>; // which types are visible
-  onToggle: (t: EdgeType) => void;
-  className?: string;
-  showCounts?: boolean;
-  showHeader?: boolean;
-};
 
 export default function Legend({
   items,
   active,
   onToggle,
-  className = '',
-  showCounts = true,
-  showHeader = true,
+  className,
+  communityCounts,
+  communityTitle = 'Communities (node colors)',
 }: Props) {
-  const visible = (items ?? []).filter((i) => i && i.type && i.count > 0);
-
-  if (visible.length === 0) {
-    return (
-      <div className={`text-xs text-gray-500 ${className}`}>
-        No edges in view. Try lowering “Min size” or enabling inferred edges.
-      </div>
-    );
-  }
+  const showCommunities =
+    Array.isArray(communityCounts) && communityCounts.length > 0;
 
   return (
-    <div className={className}>
-      {showHeader && (
-        <div className='mb-2 flex items-center gap-2'>
-          <strong className='text-sm'>Legend</strong>
-          <span className='text-xs text-gray-500'>
-            Click to show/hide edge types
-          </span>
+    <div className={`grid gap-2 ${className ?? ''}`}>
+      <div className='text-xs font-semibold text-gray-800 dark:text-gray-100'>
+        {showCommunities
+          ? 'Legend — Edges (toggle) • Nodes = Communities'
+          : 'Legend — Edge types (toggle to hide/show)'}
+      </div>
+
+      {/* Edge types */}
+      <div>
+        <div className='flex flex-wrap gap-1'>
+          {items.map(({ type, count }) => {
+            const key = String(type); // <-- force string
+            const on = active.has(type);
+            const label = EDGE_LABEL[key] ?? key;
+            const color = EDGE_COLOR[key] ?? '#888';
+            return (
+              <button
+                key={key}
+                type='button'
+                onClick={() => onToggle(type)}
+                className={
+                  'px-2 py-1 rounded-md text-xs border transition ' +
+                  (on
+                    ? 'bg-white/90 dark:bg-gray-900/90 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 shadow-sm'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-500 border-gray-300/70 dark:border-gray-700')
+                }
+                title={on ? `Click to hide ${label}` : `Click to show ${label}`}
+              >
+                <Swatch color={color} />
+                <span className='align-middle'>{label}</span>
+                <span className='align-middle opacity-70 ml-1'>({count})</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Node colors (community legend) */}
+      {showCommunities && (
+        <div className='mt-1'>
+          <div className='text-xs font-medium text-gray-700 dark:text-gray-200 mb-1'>
+            {communityTitle}
+          </div>
+          <div className='flex flex-wrap gap-1'>
+            {communityCounts!.slice(0, 10).map((c) => (
+              <div
+                key={c.communityId}
+                className='px-2 py-1 rounded-md text-xs border bg-white/90 dark:bg-gray-900/90
+                           text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 shadow-sm'
+              >
+                <Swatch color={colorForCommunityId(c.communityId)} />
+                <span className='align-middle'>#{c.communityId}</span>
+                <span className='align-middle opacity-70 ml-1'>
+                  ({c.count})
+                </span>
+              </div>
+            ))}
+          </div>
+          <div className='text-[11px] text-gray-500 dark:text-gray-400 mt-1'>
+            Each color = one Louvain cluster. Sizes shown in parentheses.
+          </div>
         </div>
       )}
-      <div className='flex flex-wrap gap-2'>
-        {visible.map(({ type, count }) => {
-          const on = active.has(type);
-          const color = COLORS[type] ?? '#8b8b8b';
-          return (
-            <button
-              key={type}
-              onClick={() => onToggle(type)}
-              className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs transition
-                ${on ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}
-                dark:${on ? 'bg-gray-100 text-gray-900 border-gray-100' : 'bg-gray-800 text-gray-100 border-gray-700 hover:bg-gray-700'}`}
-              aria-pressed={on}
-              title={`${labelFor(type)}${showCounts ? ` (${count})` : ''}`}
-            >
-              <span
-                className='inline-block h-2.5 w-2.5 rounded-full'
-                style={{ backgroundColor: color }}
-              />
-              {labelFor(type)}
-              {showCounts && <span className='opacity-70'>({count})</span>}
-            </button>
-          );
-        })}
-      </div>
-      <p className='mt-2 text-xs text-gray-500'>
-        <span
-          className='inline-block h-2.5 w-2.5 rounded-full align-middle mr-1'
-          style={{ background: '#ff1493' }}
-        />{' '}
-        Same Company
-        <span className='mx-2'>•</span>
-        <span
-          className='inline-block h-2.5 w-2.5 rounded-full align-middle mr-1'
-          style={{ background: '#00ced1' }}
-        />{' '}
-        Same Title
-        <span className='mx-2'>•</span>
-        Gray = direct connections; colors like blue/green/orange = post
-        interactions.
-      </p>
     </div>
   );
 }

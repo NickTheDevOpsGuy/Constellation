@@ -1,3 +1,4 @@
+// src/app/pages/GraphPage.tsx
 'use client';
 
 import React, { useMemo, useState, useEffect } from 'react';
@@ -8,6 +9,7 @@ import GraphDimToggle from '../components/GraphDimToggle';
 import Legend from '../components/Legend';
 import Timeline from '../components/Timeline';
 import { useLinkMap } from '../hooks/useLinkMap';
+import { useCommunities } from '../hooks/useCommunities';
 import { rowsToGraph } from '../utils/rowsToGraph';
 import { quickFilterGraph } from '../utils/quickFilterGraph';
 import type {
@@ -78,6 +80,11 @@ export default function GraphPage() {
   const [toDate, setToDate] = useState<string | undefined>();
   const [minGroup, setMinGroup] = useState(8);
   const [mode, setMode] = useState<Mode>('title');
+
+  // Canvas color mode (company | title | community)
+  const [colorMode, setColorMode] = useState<'company' | 'title' | 'community'>(
+    mode as 'company' | 'title'
+  );
 
   // Facets
   const [selCompanies, setSelCompanies] = useState<Set<string>>(new Set());
@@ -158,15 +165,12 @@ export default function GraphPage() {
     [baseRows, mode]
   );
 
-  // Collect all dates for the timeline (connections + any edge dates)
+  // Dates for timeline
   const allDates = useMemo(() => {
     const ds: string[] = [];
     for (const r of raw) if (r.connectedOn) ds.push(r.connectedOn);
     for (const e of baseGraph.edges ?? []) {
-      // strictly check for a date field and push if present
-      if ('date' in e && e.date) {
-        ds.push(e.date as string);
-      }
+      if ('date' in e && e.date) ds.push(e.date as string);
     }
     return ds;
   }, [raw, baseGraph.edges]);
@@ -198,7 +202,7 @@ export default function GraphPage() {
     [nodesAfterFacets]
   );
 
-  // G) legend counts from edges that connect kept nodes
+  // G) legend counts
   const countsBeforeLegend = useMemo(() => {
     const prelim = (thinned.edges ?? []).filter(
       (e) => keptIds.has(String(e.source)) && keptIds.has(String(e.target))
@@ -234,7 +238,18 @@ export default function GraphPage() {
     [nodesAfterFacets, edgesAfterLegend]
   );
 
-  // early return AFTER hooks
+  // Communities (computed on *already filtered* graph)
+  const { applyCommunities, modularity, counts } = useCommunities();
+
+  const graphForCanvas: GraphData = useMemo(() => {
+    if (colorMode !== 'community') return finalGraph;
+    const { graph: withComms } = applyCommunities(finalGraph);
+    return withComms;
+  }, [finalGraph, colorMode, applyCommunities]);
+
+  const groupByForCanvas =
+    colorMode === 'community' ? 'communityId' : (mode as 'company' | 'title');
+
   if (raw.length === 0) {
     return (
       <div className='text-gray-600'>
@@ -300,7 +315,10 @@ export default function GraphPage() {
           minSize={minGroup}
           onMinSizeChange={setMinGroup}
           mode={mode}
-          onModeChange={setMode}
+          onModeChange={(m) => {
+            setMode(m);
+            if (m === 'company' || m === 'title') setColorMode(m);
+          }}
         />
       </div>
 
@@ -319,7 +337,7 @@ export default function GraphPage() {
         />
       </div>
 
-      {/* legend */}
+      {/* legend (now aware of community mode) */}
       <div style={{ gridColumn: '1 / span 2' }} className='px-1'>
         <Legend
           items={legendItems}
@@ -333,6 +351,9 @@ export default function GraphPage() {
             })
           }
           className='mt-1'
+          /* ✅ Only pass communityCounts in community mode */
+          communityCounts={colorMode === 'community' ? counts : undefined}
+          communityTitle='Communities (node colors)'
         />
       </div>
 
@@ -357,15 +378,65 @@ export default function GraphPage() {
           style={{ height: 'var(--graph-height, 66vh)' }}
         >
           <GraphCanvas
-            data={finalGraph}
-            groupBy={mode}
+            data={graphForCanvas}
+            groupBy={groupByForCanvas}
             labelMode='zoom'
             dimension={dim}
           />
 
-          <div className='absolute right-3 top-3 z-10'>
-            <GraphDimToggle value={dim} onChange={setDim} />
+          {/* Top-right controls (high-contrast) */}
+          <div
+            className='absolute right-3 top-3 z-10 flex items-center gap-2
+                       rounded-md border border-gray-300 dark:border-gray-700
+                       bg-white/95 dark:bg-gray-900/95 shadow-md px-2 py-1'
+          >
+            <label className='text-xs md:text-sm text-gray-600 dark:text-gray-300 mr-1'>
+              Color:
+            </label>
+            <select
+              className='appearance-none text-xs md:text-sm h-8 px-2 rounded-md
+                         bg-white dark:bg-gray-800
+                         text-gray-900 dark:text-gray-100
+                         border border-gray-300 dark:border-gray-600
+                         focus:outline-none focus:ring-2 focus:ring-blue-500'
+              value={colorMode}
+              onChange={(e) =>
+                setColorMode(
+                  e.target.value as 'company' | 'title' | 'community'
+                )
+              }
+              aria-label='Color nodes by'
+            >
+              <option value='company'>Company</option>
+              <option value='title'>Title</option>
+              <option value='community'>Community (Louvain)</option>
+            </select>
+
+            <div className='ml-2'>
+              <GraphDimToggle
+                value={dim}
+                onChange={(v) => {
+                  setDim(v);
+                  try {
+                    localStorage.setItem('graph-dimension', v);
+                  } catch {}
+                }}
+              />
+            </div>
           </div>
+
+          {/* Modularity badge (high-contrast) */}
+          {colorMode === 'community' && (
+            <div
+              className='absolute left-3 top-3 z-10 rounded-md
+                         bg-black/70 text-white border border-white/20
+                         px-2 py-1 text-xs shadow-md'
+            >
+              {typeof modularity === 'number'
+                ? `Modularity: ${modularity.toFixed(3)}`
+                : 'Computing communities…'}
+            </div>
+          )}
         </div>
       </main>
 
@@ -412,6 +483,18 @@ export default function GraphPage() {
             })}
           </tbody>
         </table>
+
+        {colorMode === 'community' &&
+          Array.isArray(counts) &&
+          counts.length > 0 && (
+            <div className='text-xs text-gray-600 mt-2'>
+              <strong>Top communities:</strong>{' '}
+              {counts
+                .slice(0, 6)
+                .map((c) => `#${c.communityId} (${c.count})`)
+                .join(', ')}
+            </div>
+          )}
       </section>
     </div>
   );
