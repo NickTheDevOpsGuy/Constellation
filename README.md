@@ -15,9 +15,7 @@ _Visualize your LinkedIn network like a constellation — built with React, Type
 ## 🚀 What’s New
 
 <!-- START:WHATS_NEW -->
-
 _No code changes found in the recent range._
-
 <!-- END:WHATS_NEW -->
 
 ---
