@@ -1,13 +1,6 @@
 // src/app/components/GraphCanvas.tsx
 'use client';
 
-import {
-  edgeColor,
-  hasArrow,
-  isInferred,
-  widthWithWeight,
-} from '../utils/edgeColors';
-
 import React, {
   useEffect,
   useMemo,
@@ -16,11 +9,13 @@ import React, {
   useState,
 } from 'react';
 import ForceGraph2D, {
-  type ForceGraphMethods,
   type NodeObject as RFBaseNode,
   type LinkObject as RFBaseLink,
+  type ForceGraphMethods as FG2DMethods,
 } from 'react-force-graph-2d';
-import ForceGraph3D from 'react-force-graph-3d';
+import ForceGraph3D, {
+  type ForceGraphMethods as FG3DMethods,
+} from 'react-force-graph-3d';
 import type {
   GraphData,
   PersonNode,
@@ -70,9 +65,19 @@ type RFLink = RFBaseLink<
   weight?: number;
 };
 
-type ForceGraphWithCanvas = ForceGraphMethods<RFNode, RFLink> & {
-  canvas?: () => HTMLCanvasElement | undefined;
-  d3VelocityDecay?: (v: number) => void;
+/** The exact ref type both 2D and 3D components expect */
+type FGRefType = React.MutableRefObject<
+  | import('react-force-graph-2d').ForceGraphMethods<
+      RFBaseNode<RFNode>,
+      RFBaseLink<RFNode, RFLink>
+    >
+  | undefined
+>;
+
+/** Minimal methods we *use* */
+type FGCommon = {
+  zoomToFit?: (durationMs?: number, padding?: number) => unknown;
+  d3Force?: (name: string) => unknown;
 };
 
 type CanvasPersonNode = PersonNode & {
@@ -91,7 +96,7 @@ function isPersonNode(n: unknown): n is CanvasPersonNode {
   return obj?.kind === 'person' && typeof obj.id === 'string';
 }
 
-/** Your original fallback grouping */
+/** Fallback grouping edges */
 function fallbackLinks(
   nodes: PersonNode[],
   groupBy: 'company' | 'title'
@@ -124,7 +129,7 @@ function openInNewTab(href: string) {
   document.body.removeChild(a);
 }
 
-/** Your color mapping */
+/** Simple edge color map */
 const EDGE_COLOR = (t?: string) => {
   switch (t) {
     case 'authored':
@@ -155,7 +160,14 @@ const GraphCanvas: React.FC<Props> = ({
   className = '',
   dimension = '2d',
 }) => {
-  const fgRef = useRef<ForceGraphWithCanvas | null>(null);
+  // Object ref with the exact type both libs request
+  const fgInteropRef: FGRefType = useRef<
+    FG2DMethods<RFBaseNode<RFNode>, RFBaseLink<RFNode, RFLink>> | undefined
+  >(undefined);
+
+  // Looser handle for methods we call
+  const fgCommonRef = useRef<FGCommon | null>(null);
+
   const wrapRef = useRef<HTMLDivElement | null>(null);
 
   const [hoverNode, setHoverNode] = useState<CanvasPersonNode | null>(null);
@@ -166,6 +178,11 @@ const GraphCanvas: React.FC<Props> = ({
     setGlOk(webglAvailable());
   }, []);
 
+  /** Keep fgCommonRef pointing at the current interop ref */
+  useEffect(() => {
+    fgCommonRef.current = (fgInteropRef.current as unknown as FGCommon) ?? null;
+  }, [dimension, data]);
+
   /** Normalize graph (edges or links), keep your fallback */
   const graph = useMemo(() => {
     const nodes: RFNode[] = (data?.nodes ?? []).map((n) => ({
@@ -173,11 +190,21 @@ const GraphCanvas: React.FC<Props> = ({
       val: 3,
     })) as RFNode[];
 
-    const rawLinks: any[] = (data as any)?.edges ?? (data as any)?.links ?? [];
+    type RawLink = Partial<{
+      source: string | number;
+      target: string | number;
+      type?: string;
+      kind?: string;
+      date?: string;
+      weight?: number;
+    }>;
 
-    const normalizedLinks: RFLink[] = rawLinks.map((l: any) => ({
-      source: l.source,
-      target: l.target,
+    const from = data as unknown as { edges?: RawLink[]; links?: RawLink[] };
+    const rawLinks: RawLink[] | undefined = from.edges ?? from.links;
+
+    const normalizedLinks: RFLink[] = (rawLinks ?? []).map((l) => ({
+      source: l.source ?? '',
+      target: l.target ?? '',
       type: l.type ?? l.kind ?? 'connection',
       kind: l.kind,
       date: l.date,
@@ -199,32 +226,35 @@ const GraphCanvas: React.FC<Props> = ({
 
   /** Physics & zoom common setup */
   useEffect(() => {
-    const fg = fgRef.current;
+    const fg = fgCommonRef.current;
     if (!fg) return;
 
-    const charge = fg.d3Force?.('charge') as
-      | { strength?: (s: number) => unknown }
-      | undefined;
+    const charge = (fg.d3Force?.('charge') ?? null) as {
+      strength?: (s: number) => unknown;
+    } | null;
     charge?.strength?.(-80);
 
-    const link = fg.d3Force?.('link') as
-      | {
-          distance?: (d: number) => unknown;
-          strength?: (s: number) => unknown;
-        }
-      | undefined;
+    const link = (fg.d3Force?.('link') ?? null) as {
+      distance?: (d: number) => unknown;
+      strength?: (s: number) => unknown;
+    } | null;
     link?.distance?.(30);
     link?.strength?.(0.25);
 
-    fg.d3VelocityDecay?.(0.4);
+    // 2D only (safe-guarded)
+    (
+      fgInteropRef.current as unknown as {
+        d3VelocityDecay?: (v: number) => void;
+      }
+    )?.d3VelocityDecay?.(0.4);
   }, [graph]);
 
   useEffect(() => {
-    const t = setTimeout(() => fgRef.current?.zoomToFit(400, 40), 0);
+    const t = setTimeout(() => fgCommonRef.current?.zoomToFit?.(400, 40), 0);
     return () => clearTimeout(t);
   }, [graph]);
 
-  /** Your 2D node painter */
+  /** 2D node painter */
   const drawNode2D = useCallback(
     (node: RFNode, ctx: CanvasRenderingContext2D, scale: number) => {
       if (!isPersonNode(node)) return;
@@ -296,9 +326,11 @@ const GraphCanvas: React.FC<Props> = ({
         {want3D ? (
           <ForceGraph3D<RFNode, RFLink>
             key='fg3d'
+            // exact object ref type required by the library
             ref={
-              fgRef as unknown as React.MutableRefObject<
-                ForceGraphMethods<RFNode, RFLink> | undefined
+              fgInteropRef as unknown as React.MutableRefObject<
+                | FG3DMethods<RFBaseNode<RFNode>, RFBaseLink<RFNode, RFLink>>
+                | undefined
               >
             }
             graphData={graph}
@@ -309,9 +341,8 @@ const GraphCanvas: React.FC<Props> = ({
             linkOpacity={0.9}
             linkWidth={1.5}
             warmupTicks={120}
-            /* give the sim time, then frame it */
             onEngineStop={() =>
-              setTimeout(() => fgRef.current?.zoomToFit(500, 120), 600)
+              setTimeout(() => fgCommonRef.current?.zoomToFit?.(500, 120), 600)
             }
             rendererConfig={{
               antialias: true,
@@ -333,11 +364,7 @@ const GraphCanvas: React.FC<Props> = ({
         ) : (
           <ForceGraph2D<RFNode, RFLink>
             key='fg2d'
-            ref={
-              fgRef as unknown as React.MutableRefObject<
-                ForceGraphMethods<RFNode, RFLink> | undefined
-              >
-            }
+            ref={fgInteropRef}
             graphData={graph}
             backgroundColor='#ffffff'
             nodeRelSize={6}
@@ -350,7 +377,7 @@ const GraphCanvas: React.FC<Props> = ({
             linkWidth={1}
             warmupTicks={60}
             cooldownTicks={100}
-            onEngineStop={() => fgRef.current?.zoomToFit(200, 40)}
+            onEngineStop={() => fgCommonRef.current?.zoomToFit?.(200, 40)}
             onNodeClick={(node) => {
               if (isPersonNode(node) && node.url)
                 openInNewTab(String(node.url));
@@ -359,17 +386,22 @@ const GraphCanvas: React.FC<Props> = ({
               setHoverNode(
                 node && isPersonNode(node) ? (node as CanvasPersonNode) : null
               );
-              const canvas = fgRef.current?.canvas?.();
+              const canvas = (
+                fgInteropRef.current as unknown as {
+                  canvas?: () => HTMLCanvasElement | undefined;
+                }
+              )?.canvas?.();
               if (canvas) {
                 const hasUrl = !!(node && isPersonNode(node) && node.url);
                 canvas.style.cursor = hasUrl ? 'pointer' : 'default';
               }
+              fgCommonRef.current =
+                (fgInteropRef.current as unknown as FGCommon) ?? null;
             }}
           />
         )}
       </div>
 
-      {/* If 3D requested but unavailable, show a badge */}
       {dimension === '3d' && !glOk && (
         <div className='absolute right-3 top-3 z-10 rounded-md bg-amber-100 text-amber-900 text-xs px-2 py-1 shadow'>
           WebGL not available — showing 2D

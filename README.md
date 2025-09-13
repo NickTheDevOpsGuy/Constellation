@@ -15,7 +15,26 @@ _Visualize your LinkedIn network like a constellation — built with React, Type
 ## 🚀 What’s New
 
 <!-- START:WHATS_NEW -->
-_No code changes found in the recent range._
+- 🎨 auto-format code with Prettier [skip-precheck] ([083e478](https://github.com/NickTheDevOpsGuy/Constellation/commit/083e478))
+- 🔹 Trying this again ([b2389c2](https://github.com/NickTheDevOpsGuy/Constellation/commit/b2389c2))
+- 🔹 Fixing up a few more things' ([9d845d2](https://github.com/NickTheDevOpsGuy/Constellation/commit/9d845d2))
+- 🔹 Fixing up some files ([28a0977](https://github.com/NickTheDevOpsGuy/Constellation/commit/28a0977))
+- 🔹 Fixing this up ([330a918](https://github.com/NickTheDevOpsGuy/Constellation/commit/330a918))
+- 🔹 Fixing it so its pretty ([57f164f](https://github.com/NickTheDevOpsGuy/Constellation/commit/57f164f))
+- 🔹 Adding in timeline updated readme.md with new file tree and removed timline from readme.md ([e3d1a0b](https://github.com/NickTheDevOpsGuy/Constellation/commit/e3d1a0b))
+- 🔹 Adding in timeline ([06870fc](https://github.com/NickTheDevOpsGuy/Constellation/commit/06870fc))
+- 🔹 Update README.md ([66800f3](https://github.com/NickTheDevOpsGuy/Constellation/commit/66800f3))
+- 🔹 Update commit-update.yml ([c1f9a56](https://github.com/NickTheDevOpsGuy/Constellation/commit/c1f9a56))
+- 🔹 Adding this all in ([72c7fd2](https://github.com/NickTheDevOpsGuy/Constellation/commit/72c7fd2))
+- 🔹 Making a futher change ([aee3c88](https://github.com/NickTheDevOpsGuy/Constellation/commit/aee3c88))
+- 🔹 Trying to add more github actions ([9d22b47](https://github.com/NickTheDevOpsGuy/Constellation/commit/9d22b47))
+- 🔹 Fixing up some issues ([e00d4e5](https://github.com/NickTheDevOpsGuy/Constellation/commit/e00d4e5))
+- 🔹 Fixing index.html issue with formating ([9ccc0dd](https://github.com/NickTheDevOpsGuy/Constellation/commit/9ccc0dd))
+- 🔹 Fixing up index.html ([f0ce1eb](https://github.com/NickTheDevOpsGuy/Constellation/commit/f0ce1eb))
+- 🔹 Trying to fix this up ([e322035](https://github.com/NickTheDevOpsGuy/Constellation/commit/e322035))
+- 🔹 Fixing stuff up ([70119d9](https://github.com/NickTheDevOpsGuy/Constellation/commit/70119d9))
+- 🔹 Adding in husky ([87c5205](https://github.com/NickTheDevOpsGuy/Constellation/commit/87c5205))
+- 🔹 Adding in husky' ([1e445ee](https://github.com/NickTheDevOpsGuy/Constellation/commit/1e445ee))
 <!-- END:WHATS_NEW -->
 
 ---
@@ -23,7 +42,7 @@ _No code changes found in the recent range._
 ## 🚀 Features
 
 - 📥 **Import CSV**  
-  Upload your exported LinkedIn connections file directly (drag & drop).  
+  Upload your exported LinkedIn connections file directly (drag & drop) via your export `.zip` from LinkedIN.  
   The parser cleans up preamble lines and normalizes fields like `First Name`, `Last Name`, `Company`, `Title`, and `Connected On`.
 
 - 📊 **Stats Dashboard**
@@ -63,32 +82,31 @@ This means you can safely explore and visualize your network without worrying ab
 
 ## 🗓️ Roadmap
 
-- 🌐 **Multi-Dataset Support**  
+- 🌐 **Multi-Dataset Support**
   - Import and compare multiple LinkedIn exports side-by-side (e.g. personal vs company account).
 
-- 🕵️ **Advanced Analytics**  
-  - Detect clusters/communities automatically (Louvain, modularity, etc.)  
-  - Highlight most central people (betweenness, PageRank, degree centrality)  
-  - Timeline view to see how your network evolves over time
+- 🕵️ **Advanced Analytics**
+  - Detect clusters/communities automatically (Louvain, modularity, etc.)
+  - Highlight most central people (betweenness, PageRank, degree centrality)
 
-- 🖼️ **Enhanced Visualization**  
-  - Mini-map navigator for large graphs  
-  - “Zoom to node” search (jump directly to a person)  
-  - Improved tooltips with profile photos or richer LinkedIn fields  
+- 🖼️ **Enhanced Visualization**
+  - Mini-map navigator for large graphs
+  - “Zoom to node” search (jump directly to a person)
+  - Improved tooltips with profile photos or richer LinkedIn fields
   - Dark mode polish with theme toggle
 
-- 🛠️ **Better Edge Insights**  
-  - Edge weighting by frequency of interaction  
-  - Animate recent edges or fade inactive ones  
+- 🛠️ **Better Edge Insights**
+  - Edge weighting by frequency of interaction
+  - Animate recent edges or fade inactive ones
   - Optional curved edges with arrow directions for clarity
 
-- 📤 **Export Options**  
-  - Export filtered views as CSV  
+- 📤 **Export Options**
+  - Export filtered views as CSV
   - Share interactive web snapshots (hosted HTML, not just PNG/JSON)
 
-- 🔑 **Integration Ideas**  
-  - Supabase / SQLite backend to store imports  
-  - API to query connections programmatically  
+- 🔑 **Integration Ideas**
+  - Supabase / SQLite backend to store imports
+  - API to query connections programmatically
   - Auth to save personal graphs securely in the cloud
 
 ---
@@ -144,6 +162,27 @@ Clone the repo and install dependencies:
 │       ├── commit-update.yml
 │       └── constellation-ci.yml
 ├── .gitignore
+├── .husky
+│   ├── _
+│   │   ├── .gitignore
+│   │   ├── applypatch-msg
+│   │   ├── commit-msg
+│   │   ├── h
+│   │   ├── husky.sh
+│   │   ├── post-applypatch
+│   │   ├── post-checkout
+│   │   ├── post-commit
+│   │   ├── post-merge
+│   │   ├── post-rewrite
+│   │   ├── pre-applypatch
+│   │   ├── pre-auto-gc
+│   │   ├── pre-commit
+│   │   ├── pre-merge-commit
+│   │   ├── pre-push
+│   │   ├── pre-rebase
+│   │   └── prepare-commit-msg
+│   ├── pre-commit
+│   └── pre-push
 ├── .prettierignore
 ├── .prettierrc.json
 ├── .prettierrc.yml
@@ -165,11 +204,13 @@ Clone the repo and install dependencies:
 │   │   │   ├── Facets.tsx
 │   │   │   ├── FileDrop.tsx
 │   │   │   ├── GraphCanvas.tsx
+│   │   │   ├── GraphDimToggle.tsx
 │   │   │   ├── Layout.tsx
 │   │   │   ├── Legend.tsx
 │   │   │   ├── NavBar.tsx
 │   │   │   ├── StatsPanel.tsx
 │   │   │   ├── StatsToolbar.tsx
+│   │   │   ├── Timeline.tsx
 │   │   │   └── Toolbar.tsx
 │   │   ├── hooks
 │   │   │   └── useLinkMap.ts
@@ -200,6 +241,7 @@ Clone the repo and install dependencies:
 ├── tailwind.config.ts
 ├── tsconfig.app.json
 ├── tsconfig.json
+└── vite.config.ts
 └── vite.config.ts
 ```
 

@@ -16,12 +16,26 @@ export default function GraphDimToggle({
     if (value) setDim(value);
   }, [value]);
 
+  useEffect(() => {
+    // hydrate from localStorage on mount
+    try {
+      const saved = localStorage.getItem(
+        'graph-dimension'
+      ) as GraphDimension | null;
+      if (saved === '2d' || saved === '3d') setDim(saved);
+    } catch (_err) {
+      console.log('Error:' + _err);
+    }
+  }, []);
+
   const set = (next: GraphDimension) => {
     setDim(next);
     onChange(next);
     try {
       localStorage.setItem('graph-dimension', next);
-    } catch {}
+    } catch (_err) {
+      console.log('Error:' + _err);
+    }
   };
 
   return (
@@ -33,7 +47,9 @@ export default function GraphDimToggle({
       <button
         type='button'
         onClick={() => set('2d')}
-        className={`rounded-full px-3 py-1 ${dim === '2d' ? 'bg-white text-black' : 'opacity-80 hover:opacity-100'}`}
+        className={`rounded-full px-3 py-1 ${
+          dim === '2d' ? 'bg-white text-black' : 'opacity-80 hover:opacity-100'
+        }`}
         aria-pressed={dim === '2d'}
       >
         2D
@@ -41,7 +57,9 @@ export default function GraphDimToggle({
       <button
         type='button'
         onClick={() => set('3d')}
-        className={`rounded-full px-3 py-1 ${dim === '3d' ? 'bg-white text-black' : 'opacity-80 hover:opacity-100'}`}
+        className={`rounded-full px-3 py-1 ${
+          dim === '3d' ? 'bg-white text-black' : 'opacity-80 hover:opacity-100'
+        }`}
         aria-pressed={dim === '3d'}
       >
         3D
