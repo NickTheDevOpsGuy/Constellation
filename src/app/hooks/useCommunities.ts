@@ -58,11 +58,11 @@ export function useCommunities() {
       const nodes = graph.nodes.map((n) =>
         (n as any).kind === 'person'
           ? ({ ...n, communityId: communities[String(n.id)] ?? -1 } as AnyNode)
-          : n,
+          : n
       );
       return { graph: { ...graph, nodes }, modularity, counts };
     },
-    [compute],
+    [compute]
   );
 
   return {
