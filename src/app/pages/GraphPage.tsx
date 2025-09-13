@@ -30,10 +30,15 @@ function countBy<T>(rows: T[], keyOf: (r: T) => string) {
 function isPerson(n: PersonNode | PostNode): n is PersonNode {
   return n.kind === 'person';
 }
-function filterNodesByFacets(nodes: PersonNode[], companies: Set<string>, titles: Set<string>) {
+function filterNodesByFacets(
+  nodes: PersonNode[],
+  companies: Set<string>,
+  titles: Set<string>
+) {
   if (companies.size === 0 && titles.size === 0) return nodes;
   return nodes.filter((n) => {
-    const coOk = companies.size === 0 || (n.company && companies.has(n.company));
+    const coOk =
+      companies.size === 0 || (n.company && companies.has(n.company));
     const tiOk = titles.size === 0 || (n.title && titles.has(n.title));
     return coOk && tiOk;
   });
@@ -44,11 +49,15 @@ function normalizeEdgeType(t?: EdgeType): EdgeType {
 function filterEdgesByTypes(
   edges: GraphData['edges'],
   active: Set<EdgeType>,
-  keepIds: Set<string>,
+  keepIds: Set<string>
 ) {
   return edges.filter((e) => {
     const t = normalizeEdgeType(e.type);
-    return active.has(t) && keepIds.has(String(e.source)) && keepIds.has(String(e.target));
+    return (
+      active.has(t) &&
+      keepIds.has(String(e.source)) &&
+      keepIds.has(String(e.target))
+    );
   });
 }
 function edgeTypeCounts(edges: GraphData['edges']) {
@@ -87,14 +96,16 @@ export default function GraphPage() {
         'messaged',
         'co_company',
         'co_title',
-      ]),
+      ])
   );
 
   // Dimension state (2D/3D), persisted in localStorage
   const [dim, setDim] = useState<GraphDimension>('2d');
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('graph-dimension') as GraphDimension | null;
+      const saved = localStorage.getItem(
+        'graph-dimension'
+      ) as GraphDimension | null;
       if (saved === '2d' || saved === '3d') setDim(saved);
     } catch (_err) {
       console.log('Errors:' + _err);
@@ -120,7 +131,7 @@ export default function GraphPage() {
 
         return matchesText && inRange;
       }),
-    [raw, q, fromDate, toDate],
+    [raw, q, fromDate, toDate]
   );
 
   // B) facet counts
@@ -131,7 +142,8 @@ export default function GraphPage() {
   const filteredRows = useMemo(() => {
     if (selCompanies.size === 0 && selTitles.size === 0) return baseRows;
     return baseRows.filter((r) => {
-      const coOk = selCompanies.size === 0 || (r.company && selCompanies.has(r.company));
+      const coOk =
+        selCompanies.size === 0 || (r.company && selCompanies.has(r.company));
       const tiOk = selTitles.size === 0 || (r.title && selTitles.has(r.title));
       return coOk && tiOk;
     });
@@ -143,7 +155,7 @@ export default function GraphPage() {
       rowsToGraph(baseRows, mode, {
         infer: 'both',
       }),
-    [baseRows, mode],
+    [baseRows, mode]
   );
 
   // Collect all dates for the timeline (connections + any edge dates)
@@ -172,7 +184,7 @@ export default function GraphPage() {
         hideIsolates: true,
         mode,
       }),
-    [baseGraph, filterText, fromDate, toDate, minGroup, mode],
+    [baseGraph, filterText, fromDate, toDate, minGroup, mode]
   );
 
   // F) nodes after facets
@@ -181,12 +193,15 @@ export default function GraphPage() {
     return filterNodesByFacets(peopleOnly, selCompanies, selTitles);
   }, [thinned.nodes, selCompanies, selTitles]);
 
-  const keptIds = useMemo(() => new Set(nodesAfterFacets.map((n) => n.id)), [nodesAfterFacets]);
+  const keptIds = useMemo(
+    () => new Set(nodesAfterFacets.map((n) => n.id)),
+    [nodesAfterFacets]
+  );
 
   // G) legend counts from edges that connect kept nodes
   const countsBeforeLegend = useMemo(() => {
     const prelim = (thinned.edges ?? []).filter(
-      (e) => keptIds.has(String(e.source)) && keptIds.has(String(e.target)),
+      (e) => keptIds.has(String(e.source)) && keptIds.has(String(e.target))
     );
     return edgeTypeCounts(prelim);
   }, [thinned.edges, keptIds]);
@@ -211,30 +226,38 @@ export default function GraphPage() {
   // H) apply legend filter
   const edgesAfterLegend = useMemo(
     () => filterEdgesByTypes(thinned.edges ?? [], activeEdgeTypes, keptIds),
-    [thinned.edges, activeEdgeTypes, keptIds],
+    [thinned.edges, activeEdgeTypes, keptIds]
   );
 
   const finalGraph: GraphData = useMemo(
     () => ({ nodes: nodesAfterFacets, edges: edgesAfterLegend }),
-    [nodesAfterFacets, edgesAfterLegend],
+    [nodesAfterFacets, edgesAfterLegend]
   );
 
   // early return AFTER hooks
   if (raw.length === 0) {
-    return <div className="text-gray-600">No data yet. Go to Import and upload a CSV.</div>;
+    return (
+      <div className='text-gray-600'>
+        No data yet. Go to Import and upload a CSV.
+      </div>
+    );
   }
 
   // facet VMs
-  const companyFacets: FacetItem[] = companyCounts.slice(0, 24).map(([value, count]) => ({
-    value,
-    count,
-    checked: selCompanies.has(value),
-  }));
-  const titleFacets: FacetItem[] = titleCounts.slice(0, 24).map(([value, count]) => ({
-    value,
-    count,
-    checked: selTitles.has(value),
-  }));
+  const companyFacets: FacetItem[] = companyCounts
+    .slice(0, 24)
+    .map(([value, count]) => ({
+      value,
+      count,
+      checked: selCompanies.has(value),
+    }));
+  const titleFacets: FacetItem[] = titleCounts
+    .slice(0, 24)
+    .map(([value, count]) => ({
+      value,
+      count,
+      checked: selTitles.has(value),
+    }));
 
   const toggleCompany = (v: string) =>
     setSelCompanies((prev) => {
@@ -257,7 +280,7 @@ export default function GraphPage() {
 
   return (
     <div
-      className="w-full grid gap-3"
+      className='w-full grid gap-3'
       style={{
         height: 'calc(100vh - 140px)',
         gridTemplateRows: 'auto auto auto minmax(420px,1fr) auto',
@@ -267,7 +290,7 @@ export default function GraphPage() {
       {/* toolbar */}
       <div style={{ gridColumn: '1 / span 2' }}>
         <Toolbar
-          className="max-w-none"
+          className='max-w-none'
           filterText={filterText}
           onFilterTextChange={setFilterText}
           fromDate={fromDate}
@@ -282,7 +305,10 @@ export default function GraphPage() {
       </div>
 
       {/* timeline */}
-      <div style={{ gridColumn: '1 / span 2' }} className="px-1 -mt-2 flex items-center gap-3">
+      <div
+        style={{ gridColumn: '1 / span 2' }}
+        className='px-1 -mt-2 flex items-center gap-3'
+      >
         <Timeline
           dates={allDates}
           onChange={({ from, to }) => {
@@ -294,7 +320,7 @@ export default function GraphPage() {
       </div>
 
       {/* legend */}
-      <div style={{ gridColumn: '1 / span 2' }} className="px-1">
+      <div style={{ gridColumn: '1 / span 2' }} className='px-1'>
         <Legend
           items={legendItems}
           active={activeEdgeTypes}
@@ -306,12 +332,12 @@ export default function GraphPage() {
               return next;
             })
           }
-          className="mt-1"
+          className='mt-1'
         />
       </div>
 
       {/* facets */}
-      <aside className="border rounded p-3 overflow-auto">
+      <aside className='border rounded p-3 overflow-auto'>
         <Facets
           companies={companyFacets}
           titles={titleFacets}
@@ -322,40 +348,55 @@ export default function GraphPage() {
       </aside>
 
       {/* graph */}
-      <main className="border rounded overflow-hidden" style={{ minHeight: 420 }}>
-        <div className="relative h-full" style={{ height: 'var(--graph-height, 66vh)' }}>
-          <GraphCanvas data={finalGraph} groupBy={mode} labelMode="zoom" dimension={dim} />
+      <main
+        className='border rounded overflow-hidden'
+        style={{ minHeight: 420 }}
+      >
+        <div
+          className='relative h-full'
+          style={{ height: 'var(--graph-height, 66vh)' }}
+        >
+          <GraphCanvas
+            data={finalGraph}
+            groupBy={mode}
+            labelMode='zoom'
+            dimension={dim}
+          />
 
-          <div className="absolute right-3 top-3 z-10">
+          <div className='absolute right-3 top-3 z-10'>
             <GraphDimToggle value={dim} onChange={setDim} />
           </div>
         </div>
       </main>
 
       {/* table */}
-      <section style={{ gridColumn: '1 / span 2' }} className="border rounded p-3 overflow-auto">
-        <h4 className="text-sm font-semibold mb-2">Connections</h4>
-        <table className="w-full text-sm border-collapse">
-          <thead className="bg-gray-50 border-b">
+      <section
+        style={{ gridColumn: '1 / span 2' }}
+        className='border rounded p-3 overflow-auto'
+      >
+        <h4 className='text-sm font-semibold mb-2'>Connections</h4>
+        <table className='w-full text-sm border-collapse'>
+          <thead className='bg-gray-50 border-b'>
             <tr>
-              <th className="px-2 py-1 text-left">Name</th>
-              <th className="px-2 py-1 text-left">Company</th>
-              <th className="px-2 py-1 text-left">Title</th>
-              <th className="px-2 py-1 text-left">ConnectedOn</th>
+              <th className='px-2 py-1 text-left'>Name</th>
+              <th className='px-2 py-1 text-left'>Company</th>
+              <th className='px-2 py-1 text-left'>Title</th>
+              <th className='px-2 py-1 text-left'>ConnectedOn</th>
             </tr>
           </thead>
           <tbody>
             {filteredRows.slice(0, 120).map((r, i) => {
-              const name = [r.firstName, r.lastName].filter(Boolean).join(' ') || '—';
+              const name =
+                [r.firstName, r.lastName].filter(Boolean).join(' ') || '—';
               return (
-                <tr key={i} className="border-b last:border-0">
-                  <td className="px-2 py-1">
+                <tr key={i} className='border-b last:border-0'>
+                  <td className='px-2 py-1'>
                     {r.url ? (
                       <a
                         href={r.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline"
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        className='text-blue-600 hover:underline'
                       >
                         {name}
                       </a>
@@ -363,9 +404,9 @@ export default function GraphPage() {
                       name
                     )}
                   </td>
-                  <td className="px-2 py-1">{r.company ?? '—'}</td>
-                  <td className="px-2 py-1">{r.title ?? '—'}</td>
-                  <td className="px-2 py-1">{r.connectedOn ?? '—'}</td>
+                  <td className='px-2 py-1'>{r.company ?? '—'}</td>
+                  <td className='px-2 py-1'>{r.title ?? '—'}</td>
+                  <td className='px-2 py-1'>{r.connectedOn ?? '—'}</td>
                 </tr>
               );
             })}
