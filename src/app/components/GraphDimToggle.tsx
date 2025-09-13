@@ -19,12 +19,12 @@ export default function GraphDimToggle({
   useEffect(() => {
     // hydrate from localStorage on mount
     try {
-      const saved = localStorage.getItem('graph-dimension') as
-        | GraphDimension
-        | null;
+      const saved = localStorage.getItem(
+        'graph-dimension'
+      ) as GraphDimension | null;
       if (saved === '2d' || saved === '3d') setDim(saved);
     } catch (_err) {
-      console.log("Error:" + _err)
+      console.log('Error:' + _err);
     }
   }, []);
 
@@ -34,7 +34,7 @@ export default function GraphDimToggle({
     try {
       localStorage.setItem('graph-dimension', next);
     } catch (_err) {
-      console.log("Error:" + _err)
+      console.log('Error:' + _err);
     }
   };
 

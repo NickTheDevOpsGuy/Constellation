@@ -108,7 +108,7 @@ export default function GraphPage() {
       ) as GraphDimension | null;
       if (saved === '2d' || saved === '3d') setDim(saved);
     } catch (_err) {
-      console.log("Errors:" +_err)
+      console.log('Errors:' + _err);
     }
   }, []);
 
