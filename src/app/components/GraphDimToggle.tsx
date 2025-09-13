@@ -26,12 +26,12 @@ export default function GraphDimToggle({
 
   return (
     <div
-      className="flex select-none items-center gap-2 rounded-full bg-black/60 px-2 py-1 text-xs text-white shadow-lg backdrop-blur"
-      role="group"
-      aria-label="Graph dimension"
+      className='flex select-none items-center gap-2 rounded-full bg-black/60 px-2 py-1 text-xs text-white shadow-lg backdrop-blur'
+      role='group'
+      aria-label='Graph dimension'
     >
       <button
-        type="button"
+        type='button'
         onClick={() => set('2d')}
         className={`rounded-full px-3 py-1 ${dim === '2d' ? 'bg-white text-black' : 'opacity-80 hover:opacity-100'}`}
         aria-pressed={dim === '2d'}
@@ -39,7 +39,7 @@ export default function GraphDimToggle({
         2D
       </button>
       <button
-        type="button"
+        type='button'
         onClick={() => set('3d')}
         className={`rounded-full px-3 py-1 ${dim === '3d' ? 'bg-white text-black' : 'opacity-80 hover:opacity-100'}`}
         aria-pressed={dim === '3d'}

@@ -13,7 +13,8 @@ export function parseReactions(csv: string): LinkEdge[] {
 
   return (data as Record<string, string>[]).map((row, i) => {
     const actor = row['Profile URL'] || row['Person ID'] || `actor-${i}`;
-    const post = row['Update URN'] || row['Post URN'] || row['Content URN'] || `post-${i}`;
+    const post =
+      row['Update URN'] || row['Post URN'] || row['Content URN'] || `post-${i}`;
     const date = row['Date'] || row['Created At'];
 
     return {
