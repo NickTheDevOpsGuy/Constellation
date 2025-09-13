@@ -15,6 +15,7 @@ _Visualize your LinkedIn network like a constellation — built with React, Type
 ## 🚀 What’s New
 
 <!-- START:WHATS_NEW -->
+
 - 🎨 auto-format code with Prettier [skip-precheck] ([083e478](https://github.com/NickTheDevOpsGuy/Constellation/commit/083e478))
 - 🔹 Trying this again ([b2389c2](https://github.com/NickTheDevOpsGuy/Constellation/commit/b2389c2))
 - 🔹 Fixing up a few more things' ([9d845d2](https://github.com/NickTheDevOpsGuy/Constellation/commit/9d845d2))

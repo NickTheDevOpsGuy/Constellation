@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write     # allow committing to same-repo PR branches
+  contents: write # allow committing to same-repo PR branches
   pull-requests: write
 
 concurrency:

@@ -6,8 +6,7 @@ import { parseShares } from '../utils/parseShares';
 import { parseComments } from '../utils/parseComments';
 import { parseReactions } from '../utils/parseReactions';
 
-const errMsg = (err: unknown, fallback: string) =>
-  err instanceof Error ? err.message : fallback;
+const errMsg = (err: unknown, fallback: string) => (err instanceof Error ? err.message : fallback);
 
 /** People↔Posts interaction (aligns with EdgeType) */
 export type Interaction = {
@@ -85,11 +84,7 @@ export const useLinkMap = create<LinkMapStore>((set, get) => {
   function buildNameIndex(rows: LinkedInRawRecord[]) {
     const m = new Map<string, string>(); // lowercased full name -> id (index as string)
     rows.forEach((r, i) => {
-      const key = [r.firstName, r.lastName]
-        .filter(Boolean)
-        .join(' ')
-        .trim()
-        .toLowerCase();
+      const key = [r.firstName, r.lastName].filter(Boolean).join(' ').trim().toLowerCase();
       if (key) m.set(key, String(i));
     });
     return m;
@@ -133,10 +128,7 @@ export const useLinkMap = create<LinkMapStore>((set, get) => {
           id: normPostId(s.postId) || `post:auto:${idx}`,
           kind: 'post',
           name:
-            s.text ||
-            s.sharedUrl ||
-            s.url ||
-            (s.postId ? `Post ${s.postId}` : `Post ${idx + 1}`),
+            s.text || s.sharedUrl || s.url || (s.postId ? `Post ${s.postId}` : `Post ${idx + 1}`),
           url: s.url,
           createdAt: s.createdAt,
           topics: [], // keep for later
@@ -153,10 +145,7 @@ export const useLinkMap = create<LinkMapStore>((set, get) => {
       }
     },
 
-    async loadInteractions(bundle: {
-      commentsCsv?: string | null;
-      reactionsCsv?: string | null;
-    }) {
+    async loadInteractions(bundle: { commentsCsv?: string | null; reactionsCsv?: string | null }) {
       try {
         begin();
         const { raw, posts } = get();
@@ -183,9 +172,7 @@ export const useLinkMap = create<LinkMapStore>((set, get) => {
         }
 
         if (bundle.reactionsCsv) {
-          const reactions = parseReactions(
-            bundle.reactionsCsv
-          ) as ReactionRow[];
+          const reactions = parseReactions(bundle.reactionsCsv) as ReactionRow[];
           for (const r of reactions) {
             const actorKey = (r.actorName ?? '').trim().toLowerCase();
             const actorPersonId = actorKey ? nameIdx.get(actorKey) : undefined;
