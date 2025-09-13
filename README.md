@@ -25,7 +25,7 @@ _No code changes found in the recent range._
 ## 🚀 Features
 
 - 📥 **Import CSV**  
-  Upload your exported LinkedIn connections file directly (drag & drop).  
+  Upload your exported LinkedIn connections file directly (drag & drop) via your export `.zip` from LinkedIN.  
   The parser cleans up preamble lines and normalizes fields like `First Name`, `Last Name`, `Company`, `Title`, and `Connected On`.
 
 - 📊 **Stats Dashboard**
@@ -224,6 +224,7 @@ Clone the repo and install dependencies:
 ├── tailwind.config.ts
 ├── tsconfig.app.json
 ├── tsconfig.json
+└── vite.config.ts
 └── vite.config.ts
 ```
 

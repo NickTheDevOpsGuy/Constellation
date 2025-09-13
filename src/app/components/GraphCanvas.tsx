@@ -1,32 +1,14 @@
 // src/app/components/GraphCanvas.tsx
 'use client';
 
-import {
-  edgeColor,
-  hasArrow,
-  isInferred,
-  widthWithWeight,
-} from '../utils/edgeColors';
-
-import React, {
-  useEffect,
-  useMemo,
-  useRef,
-  useCallback,
-  useState,
-} from 'react';
+import React, { useEffect, useMemo, useRef, useCallback, useState } from 'react';
 import ForceGraph2D, {
-  type ForceGraphMethods,
   type NodeObject as RFBaseNode,
   type LinkObject as RFBaseLink,
+  type ForceGraphMethods as FG2DMethods,
 } from 'react-force-graph-2d';
-import ForceGraph3D from 'react-force-graph-3d';
-import type {
-  GraphData,
-  PersonNode,
-  LinkEdge,
-  PostNode,
-} from '../types/linkedin';
+import ForceGraph3D, { type ForceGraphMethods as FG3DMethods } from 'react-force-graph-3d';
+import type { GraphData, PersonNode, LinkEdge, PostNode } from '../types/linkedin';
 
 export type GraphDimension = '2d' | '3d';
 
@@ -70,9 +52,16 @@ type RFLink = RFBaseLink<
   weight?: number;
 };
 
-type ForceGraphWithCanvas = ForceGraphMethods<RFNode, RFLink> & {
-  canvas?: () => HTMLCanvasElement | undefined;
-  d3VelocityDecay?: (v: number) => void;
+/** The exact ref type both 2D and 3D components expect */
+type FGRefType = React.MutableRefObject<
+  | import('react-force-graph-2d').ForceGraphMethods<RFBaseNode<RFNode>, RFBaseLink<RFNode, RFLink>>
+  | undefined
+>;
+
+/** Minimal methods we *use* */
+type FGCommon = {
+  zoomToFit?: (durationMs?: number, padding?: number) => unknown;
+  d3Force?: (name: string) => unknown;
 };
 
 type CanvasPersonNode = PersonNode & {
@@ -91,13 +80,9 @@ function isPersonNode(n: unknown): n is CanvasPersonNode {
   return obj?.kind === 'person' && typeof obj.id === 'string';
 }
 
-/** Your original fallback grouping */
-function fallbackLinks(
-  nodes: PersonNode[],
-  groupBy: 'company' | 'title'
-): LinkEdge[] {
-  const keyOf = (n: PersonNode) =>
-    (groupBy === 'company' ? n.company : n.title) ?? '';
+/** Fallback grouping edges */
+function fallbackLinks(nodes: PersonNode[], groupBy: 'company' | 'title'): LinkEdge[] {
+  const keyOf = (n: PersonNode) => (groupBy === 'company' ? n.company : n.title) ?? '';
   const groups = new Map<string, string[]>();
   for (const n of nodes) {
     const k = keyOf(n).trim();
@@ -124,7 +109,7 @@ function openInNewTab(href: string) {
   document.body.removeChild(a);
 }
 
-/** Your color mapping */
+/** Simple edge color map */
 const EDGE_COLOR = (t?: string) => {
   switch (t) {
     case 'authored':
@@ -155,7 +140,14 @@ const GraphCanvas: React.FC<Props> = ({
   className = '',
   dimension = '2d',
 }) => {
-  const fgRef = useRef<ForceGraphWithCanvas | null>(null);
+  // Object ref with the exact type both libs request
+  const fgInteropRef: FGRefType = useRef<
+    FG2DMethods<RFBaseNode<RFNode>, RFBaseLink<RFNode, RFLink>> | undefined
+  >(undefined);
+
+  // Looser handle for methods we call
+  const fgCommonRef = useRef<FGCommon | null>(null);
+
   const wrapRef = useRef<HTMLDivElement | null>(null);
 
   const [hoverNode, setHoverNode] = useState<CanvasPersonNode | null>(null);
@@ -166,6 +158,11 @@ const GraphCanvas: React.FC<Props> = ({
     setGlOk(webglAvailable());
   }, []);
 
+  /** Keep fgCommonRef pointing at the current interop ref */
+  useEffect(() => {
+    fgCommonRef.current = (fgInteropRef.current as unknown as FGCommon) ?? null;
+  }, [dimension, data]);
+
   /** Normalize graph (edges or links), keep your fallback */
   const graph = useMemo(() => {
     const nodes: RFNode[] = (data?.nodes ?? []).map((n) => ({
@@ -173,11 +170,21 @@ const GraphCanvas: React.FC<Props> = ({
       val: 3,
     })) as RFNode[];
 
-    const rawLinks: any[] = (data as any)?.edges ?? (data as any)?.links ?? [];
+    type RawLink = Partial<{
+      source: string | number;
+      target: string | number;
+      type?: string;
+      kind?: string;
+      date?: string;
+      weight?: number;
+    }>;
 
-    const normalizedLinks: RFLink[] = rawLinks.map((l: any) => ({
-      source: l.source,
-      target: l.target,
+    const from = data as unknown as { edges?: RawLink[]; links?: RawLink[] };
+    const rawLinks: RawLink[] | undefined = from.edges ?? from.links;
+
+    const normalizedLinks: RFLink[] = (rawLinks ?? []).map((l) => ({
+      source: l.source ?? '',
+      target: l.target ?? '',
       type: l.type ?? l.kind ?? 'connection',
       kind: l.kind,
       date: l.date,
@@ -188,10 +195,8 @@ const GraphCanvas: React.FC<Props> = ({
       normalizedLinks.length > 0
         ? normalizedLinks
         : (fallbackLinks(
-            nodes.filter(
-              (n): n is PersonNode => (n as { kind?: string }).kind === 'person'
-            ),
-            groupBy
+            nodes.filter((n): n is PersonNode => (n as { kind?: string }).kind === 'person'),
+            groupBy,
           ) as unknown as RFLink[]);
 
     return { nodes, links };
@@ -199,32 +204,31 @@ const GraphCanvas: React.FC<Props> = ({
 
   /** Physics & zoom common setup */
   useEffect(() => {
-    const fg = fgRef.current;
+    const fg = fgCommonRef.current;
     if (!fg) return;
 
-    const charge = fg.d3Force?.('charge') as
-      | { strength?: (s: number) => unknown }
-      | undefined;
+    const charge = (fg.d3Force?.('charge') ?? null) as { strength?: (s: number) => unknown } | null;
     charge?.strength?.(-80);
 
-    const link = fg.d3Force?.('link') as
-      | {
-          distance?: (d: number) => unknown;
-          strength?: (s: number) => unknown;
-        }
-      | undefined;
+    const link = (fg.d3Force?.('link') ?? null) as {
+      distance?: (d: number) => unknown;
+      strength?: (s: number) => unknown;
+    } | null;
     link?.distance?.(30);
     link?.strength?.(0.25);
 
-    fg.d3VelocityDecay?.(0.4);
+    // 2D only (safe-guarded)
+    (
+      fgInteropRef.current as unknown as { d3VelocityDecay?: (v: number) => void }
+    )?.d3VelocityDecay?.(0.4);
   }, [graph]);
 
   useEffect(() => {
-    const t = setTimeout(() => fgRef.current?.zoomToFit(400, 40), 0);
+    const t = setTimeout(() => fgCommonRef.current?.zoomToFit?.(400, 40), 0);
     return () => clearTimeout(t);
   }, [graph]);
 
-  /** Your 2D node painter */
+  /** 2D node painter */
   const drawNode2D = useCallback(
     (node: RFNode, ctx: CanvasRenderingContext2D, scale: number) => {
       if (!isPersonNode(node)) return;
@@ -261,7 +265,7 @@ const GraphCanvas: React.FC<Props> = ({
       ctx.textAlign = 'left';
       ctx.fillText(label, node.x + r + pad, node.y);
     },
-    [labelMode]
+    [labelMode],
   );
 
   const paintPointerArea = useCallback(
@@ -272,7 +276,7 @@ const GraphCanvas: React.FC<Props> = ({
       ctx.arc(node.x, node.y, 10, 0, 2 * Math.PI);
       ctx.fill();
     },
-    []
+    [],
   );
 
   /** Mouse for tooltip */
@@ -287,32 +291,26 @@ const GraphCanvas: React.FC<Props> = ({
   const want3D = dimension === '3d' && glOk;
 
   return (
-    <div
-      ref={wrapRef}
-      onMouseMove={onMouseMove}
-      className={`relative w-full h-full ${className}`}
-    >
-      <div className='absolute inset-0 border rounded overflow-hidden'>
+    <div ref={wrapRef} onMouseMove={onMouseMove} className={`relative w-full h-full ${className}`}>
+      <div className="absolute inset-0 border rounded overflow-hidden">
         {want3D ? (
           <ForceGraph3D<RFNode, RFLink>
-            key='fg3d'
+            key="fg3d"
+            // exact object ref type required by the library
             ref={
-              fgRef as unknown as React.MutableRefObject<
-                ForceGraphMethods<RFNode, RFLink> | undefined
+              fgInteropRef as unknown as React.MutableRefObject<
+                FG3DMethods<RFBaseNode<RFNode>, RFBaseLink<RFNode, RFLink>> | undefined
               >
             }
             graphData={graph}
-            backgroundColor='#ffffff'
+            backgroundColor="#ffffff"
             nodeAutoColorBy={groupBy}
             nodeRelSize={8}
             linkColor={(l) => EDGE_COLOR(l.type || l.kind || 'connection')}
             linkOpacity={0.9}
             linkWidth={1.5}
             warmupTicks={120}
-            /* give the sim time, then frame it */
-            onEngineStop={() =>
-              setTimeout(() => fgRef.current?.zoomToFit(500, 120), 600)
-            }
+            onEngineStop={() => setTimeout(() => fgCommonRef.current?.zoomToFit?.(500, 120), 600)}
             rendererConfig={{
               antialias: true,
               alpha: true,
@@ -321,25 +319,18 @@ const GraphCanvas: React.FC<Props> = ({
               failIfMajorPerformanceCaveat: false,
             }}
             onNodeClick={(node) => {
-              if (isPersonNode(node) && node.url)
-                openInNewTab(String(node.url));
+              if (isPersonNode(node) && node.url) openInNewTab(String(node.url));
             }}
             onNodeHover={(node) => {
-              setHoverNode(
-                node && isPersonNode(node) ? (node as CanvasPersonNode) : null
-              );
+              setHoverNode(node && isPersonNode(node) ? (node as CanvasPersonNode) : null);
             }}
           />
         ) : (
           <ForceGraph2D<RFNode, RFLink>
-            key='fg2d'
-            ref={
-              fgRef as unknown as React.MutableRefObject<
-                ForceGraphMethods<RFNode, RFLink> | undefined
-              >
-            }
+            key="fg2d"
+            ref={fgInteropRef}
             graphData={graph}
-            backgroundColor='#ffffff'
+            backgroundColor="#ffffff"
             nodeRelSize={6}
             nodeAutoColorBy={groupBy}
             nodeCanvasObject={drawNode2D}
@@ -350,77 +341,70 @@ const GraphCanvas: React.FC<Props> = ({
             linkWidth={1}
             warmupTicks={60}
             cooldownTicks={100}
-            onEngineStop={() => fgRef.current?.zoomToFit(200, 40)}
+            onEngineStop={() => fgCommonRef.current?.zoomToFit?.(200, 40)}
             onNodeClick={(node) => {
-              if (isPersonNode(node) && node.url)
-                openInNewTab(String(node.url));
+              if (isPersonNode(node) && node.url) openInNewTab(String(node.url));
             }}
             onNodeHover={(node) => {
-              setHoverNode(
-                node && isPersonNode(node) ? (node as CanvasPersonNode) : null
-              );
-              const canvas = fgRef.current?.canvas?.();
+              setHoverNode(node && isPersonNode(node) ? (node as CanvasPersonNode) : null);
+              const canvas = (
+                fgInteropRef.current as unknown as {
+                  canvas?: () => HTMLCanvasElement | undefined;
+                }
+              )?.canvas?.();
               if (canvas) {
                 const hasUrl = !!(node && isPersonNode(node) && node.url);
                 canvas.style.cursor = hasUrl ? 'pointer' : 'default';
               }
+              fgCommonRef.current = (fgInteropRef.current as unknown as FGCommon) ?? null;
             }}
           />
         )}
       </div>
 
-      {/* If 3D requested but unavailable, show a badge */}
       {dimension === '3d' && !glOk && (
-        <div className='absolute right-3 top-3 z-10 rounded-md bg-amber-100 text-amber-900 text-xs px-2 py-1 shadow'>
+        <div className="absolute right-3 top-3 z-10 rounded-md bg-amber-100 text-amber-900 text-xs px-2 py-1 shadow">
           WebGL not available — showing 2D
         </div>
       )}
 
       {hoverNode ? (
         <div
-          className='pointer-events-none absolute z-10 max-w-xs rounded-md border bg-white/95 shadow-lg text-xs p-2
-                     dark:bg-gray-900/95 dark:text-gray-100 dark:border-gray-700'
+          className="pointer-events-none absolute z-10 max-w-xs rounded-md border bg-white/95 shadow-lg text-xs p-2
+                     dark:bg-gray-900/95 dark:text-gray-100 dark:border-gray-700"
           style={{
-            left: Math.min(
-              mouse.x + 14,
-              (wrapRef.current?.clientWidth ?? 0) - 220
-            ),
-            top: Math.min(
-              mouse.y + 14,
-              (wrapRef.current?.clientHeight ?? 0) - 120
-            ),
+            left: Math.min(mouse.x + 14, (wrapRef.current?.clientWidth ?? 0) - 220),
+            top: Math.min(mouse.y + 14, (wrapRef.current?.clientHeight ?? 0) - 120),
           }}
-          role='tooltip'
+          role="tooltip"
         >
-          <div className='font-semibold'>
+          <div className="font-semibold">
             {hoverNode.name ||
-              [hoverNode.firstName, hoverNode.lastName]
-                .filter(Boolean)
-                .join(' ') ||
+              [hoverNode.firstName, hoverNode.lastName].filter(Boolean).join(' ') ||
               hoverNode.company ||
               hoverNode.id}
           </div>
           {(hoverNode.company || hoverNode.title) && (
-            <div className='mt-0.5 text-gray-600 dark:text-gray-300'>
+            <div className="mt-0.5 text-gray-600 dark:text-gray-300">
               {hoverNode.company && <span>{hoverNode.company}</span>}
               {hoverNode.company && hoverNode.title && <span> • </span>}
               {hoverNode.title && <span>{hoverNode.title}</span>}
             </div>
           )}
           {hoverNode.connectedOn && (
-            <div className='mt-0.5 text-gray-500 dark:text-gray-400'>
+            <div className="mt-0.5 text-gray-500 dark:text-gray-400">
               Connected: {hoverNode.connectedOn}
             </div>
           )}
           {Number.isFinite(hoverNode.degree) && (hoverNode.degree ?? 0) > 0 && (
-            <div className='mt-0.5 text-gray-500 dark:text-gray-400'>
+            <div className="mt-0.5 text-gray-500 dark:text-gray-400">
               Degree: {hoverNode.degree}
             </div>
           )}
           {hoverNode.url && (
-            <div className='mt-1'>
-              <span className='opacity-70'>Profile:</span>{' '}
-              <span className='underline opacity-90'>
+            <div className="mt-1">
+              <span className="opacity-70">Profile:</span>{' '}
+              <span className="underline opacity-90">
                 {String(hoverNode.url).replace(/^https?:\/\/(www\.)?/, '')}
               </span>
             </div>
