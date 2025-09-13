@@ -1,4 +1,3 @@
-// src/app/pages/GraphPage.tsx
 'use client';
 
 import React, { useMemo, useState, useEffect } from 'react';
@@ -7,7 +6,7 @@ import Facets, { type FacetItem } from '../components/Facets';
 import GraphCanvas, { type GraphDimension } from '../components/GraphCanvas';
 import GraphDimToggle from '../components/GraphDimToggle';
 import Legend from '../components/Legend';
-import Timeline from '../components/Timeline'; // ⬅️ NEW
+import Timeline from '../components/Timeline';
 import { useLinkMap } from '../hooks/useLinkMap';
 import { rowsToGraph } from '../utils/rowsToGraph';
 import { quickFilterGraph } from '../utils/quickFilterGraph';
@@ -108,7 +107,9 @@ export default function GraphPage() {
         'graph-dimension'
       ) as GraphDimension | null;
       if (saved === '2d' || saved === '3d') setDim(saved);
-    } catch {}
+    } catch (_err) {
+      console.log("Errors:" +_err)
+    }
   }, []);
 
   const q = filterText.toLowerCase();
@@ -157,13 +158,15 @@ export default function GraphPage() {
     [baseRows, mode]
   );
 
-  // ⬇️ NEW: collect all dates for the timeline (connections + any edge dates)
+  // Collect all dates for the timeline (connections + any edge dates)
   const allDates = useMemo(() => {
     const ds: string[] = [];
     for (const r of raw) if (r.connectedOn) ds.push(r.connectedOn);
     for (const e of baseGraph.edges ?? []) {
-      const anyE = e as any;
-      if (anyE?.date) ds.push(anyE.date as string);
+      // strictly check for a date field and push if present
+      if ('date' in e && e.date) {
+        ds.push(e.date as string);
+      }
     }
     return ds;
   }, [raw, baseGraph.edges]);
@@ -280,7 +283,7 @@ export default function GraphPage() {
       className='w-full grid gap-3'
       style={{
         height: 'calc(100vh - 140px)',
-        gridTemplateRows: 'auto auto auto minmax(420px,1fr) auto', // ⬅️ extra row for timeline
+        gridTemplateRows: 'auto auto auto minmax(420px,1fr) auto',
         gridTemplateColumns: '280px 1fr',
       }}
     >
@@ -301,7 +304,7 @@ export default function GraphPage() {
         />
       </div>
 
-      {/* ⬇️ NEW timeline row */}
+      {/* timeline */}
       <div
         style={{ gridColumn: '1 / span 2' }}
         className='px-1 -mt-2 flex items-center gap-3'
@@ -357,10 +360,9 @@ export default function GraphPage() {
             data={finalGraph}
             groupBy={mode}
             labelMode='zoom'
-            dimension={dim} // pass 2D/3D
+            dimension={dim}
           />
 
-          {/* toggle using reusable component */}
           <div className='absolute right-3 top-3 z-10'>
             <GraphDimToggle value={dim} onChange={setDim} />
           </div>

@@ -1,4 +1,3 @@
-// src/app/utils/edgeBuilders.ts
 import type {
   EdgeType,
   LinkEdge,
@@ -8,7 +7,7 @@ import type {
 
 export type BuildEdgesInput = {
   people: PersonNode[];
-  posts?: PostNode[];
+  posts?: PostNode[]; // accepted but not used
   interactions?: {
     actorPersonId: string;
     targetPostId: string;
@@ -57,7 +56,7 @@ function newerDate(a?: string, b?: string) {
 export function buildEdges(input: BuildEdgesInput): LinkEdge[] {
   const {
     people,
-    posts = [],
+    // posts intentionally unused
     interactions = [],
     invitations = [],
     enabled,
