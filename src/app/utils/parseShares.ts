@@ -15,11 +15,7 @@ export type ShareRow = {
 
 /** Very light CSV parser that handles quoted commas. */
 function parseCsvLoose(text: string): Record<string, string>[] {
-  const lines = text
-    .replace(/\r\n/g, '\n')
-    .replace(/\r/g, '\n')
-    .split('\n')
-    .filter(Boolean);
+  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').filter(Boolean);
   if (lines.length === 0) return [];
 
   const split = (line: string) => {
@@ -77,8 +73,7 @@ export function parseShares(csvText: string): ShareRow[] {
       r['Update ID'] ||
       '';
 
-    const createdAt =
-      r['Created At'] || r['CreatedAt'] || r['Date'] || r['Timestamp'] || '';
+    const createdAt = r['Created At'] || r['CreatedAt'] || r['Date'] || r['Timestamp'] || '';
 
     const url = r['Url'] || r['URL'] || r['Link'] || r['Permalink'] || '';
 
