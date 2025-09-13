@@ -12,11 +12,21 @@ _Visualize your LinkedIn network like a constellation — built with React, Type
 
 ---
 
-## 🚀 What’s New
+## 🚀 What’s Next
 
-<!-- START:WHATS_NEW -->
-_No code changes found in the recent range._
-<!-- END:WHATS_NEW -->
+<!-- START:NEXT_STEPS -->
+
+_No wins logged yet 🎯_
+
+<!-- END:NEXT_STEPS -->
+
+## 🏆 Achievements Lately
+
+<!-- START:ACHIEVEMENTS -->
+
+_No wins logged yet 🎯_
+
+<!-- END:ACHIEVEMENTS -->
 
 ---
 
@@ -62,6 +72,9 @@ This means you can safely explore and visualize your network without worrying ab
 ---
 
 ## 🗓️ Roadmap
+
+- 🌐 **Multi-Dataset Support**
+  - Import and compare multiple LinkedIn exports side-by-side (e.g. personal vs company account).
 
 - 🕵️ **Advanced Analytics**
   - Detect clusters/communities automatically (Louvain, modularity, etc.)
@@ -137,8 +150,8 @@ Clone the repo and install dependencies:
 │   │   └── feature_request.md
 │   └── workflows
 │       ├── codeql.yml
-│       ├── commit-update.yml
-│       └── constellation-ci.yml
+│       ├── constellation-ci.yml
+│       └── project-update.yml
 ├── .gitignore
 ├── .husky
 │   ├── _
@@ -191,6 +204,7 @@ Clone the repo and install dependencies:
 │   │   │   ├── Timeline.tsx
 │   │   │   └── Toolbar.tsx
 │   │   ├── hooks
+│   │   │   ├── useCommunities.ts
 │   │   │   └── useLinkMap.ts
 │   │   ├── main.tsx
 │   │   ├── pages
@@ -200,6 +214,7 @@ Clone the repo and install dependencies:
 │   │   ├── styles
 │   │   │   └── global.css
 │   │   ├── types
+│   │   │   ├── graphology-metrics.d.ts:
 │   │   │   └── linkedin.ts
 │   │   └── utils
 │   │       ├── edgeBuilders.ts
@@ -219,7 +234,6 @@ Clone the repo and install dependencies:
 ├── tailwind.config.ts
 ├── tsconfig.app.json
 ├── tsconfig.json
-└── vite.config.ts
 └── vite.config.ts
 ```
 
