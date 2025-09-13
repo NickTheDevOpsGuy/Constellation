@@ -15,9 +15,26 @@ _Visualize your LinkedIn network like a constellation — built with React, Type
 ## 🚀 What’s New
 
 <!-- START:WHATS_NEW -->
-
-_No code changes found in the recent range._
-
+- 🎨 auto-format code with Prettier [skip-precheck] ([083e478](https://github.com/NickTheDevOpsGuy/Constellation/commit/083e478))
+- 🔹 Trying this again ([b2389c2](https://github.com/NickTheDevOpsGuy/Constellation/commit/b2389c2))
+- 🔹 Fixing up a few more things' ([9d845d2](https://github.com/NickTheDevOpsGuy/Constellation/commit/9d845d2))
+- 🔹 Fixing up some files ([28a0977](https://github.com/NickTheDevOpsGuy/Constellation/commit/28a0977))
+- 🔹 Fixing this up ([330a918](https://github.com/NickTheDevOpsGuy/Constellation/commit/330a918))
+- 🔹 Fixing it so its pretty ([57f164f](https://github.com/NickTheDevOpsGuy/Constellation/commit/57f164f))
+- 🔹 Adding in timeline updated readme.md with new file tree and removed timline from readme.md ([e3d1a0b](https://github.com/NickTheDevOpsGuy/Constellation/commit/e3d1a0b))
+- 🔹 Adding in timeline ([06870fc](https://github.com/NickTheDevOpsGuy/Constellation/commit/06870fc))
+- 🔹 Update README.md ([66800f3](https://github.com/NickTheDevOpsGuy/Constellation/commit/66800f3))
+- 🔹 Update commit-update.yml ([c1f9a56](https://github.com/NickTheDevOpsGuy/Constellation/commit/c1f9a56))
+- 🔹 Adding this all in ([72c7fd2](https://github.com/NickTheDevOpsGuy/Constellation/commit/72c7fd2))
+- 🔹 Making a futher change ([aee3c88](https://github.com/NickTheDevOpsGuy/Constellation/commit/aee3c88))
+- 🔹 Trying to add more github actions ([9d22b47](https://github.com/NickTheDevOpsGuy/Constellation/commit/9d22b47))
+- 🔹 Fixing up some issues ([e00d4e5](https://github.com/NickTheDevOpsGuy/Constellation/commit/e00d4e5))
+- 🔹 Fixing index.html issue with formating ([9ccc0dd](https://github.com/NickTheDevOpsGuy/Constellation/commit/9ccc0dd))
+- 🔹 Fixing up index.html ([f0ce1eb](https://github.com/NickTheDevOpsGuy/Constellation/commit/f0ce1eb))
+- 🔹 Trying to fix this up ([e322035](https://github.com/NickTheDevOpsGuy/Constellation/commit/e322035))
+- 🔹 Fixing stuff up ([70119d9](https://github.com/NickTheDevOpsGuy/Constellation/commit/70119d9))
+- 🔹 Adding in husky ([87c5205](https://github.com/NickTheDevOpsGuy/Constellation/commit/87c5205))
+- 🔹 Adding in husky' ([1e445ee](https://github.com/NickTheDevOpsGuy/Constellation/commit/1e445ee))
 <!-- END:WHATS_NEW -->
 
 ---
