@@ -86,9 +86,9 @@ export default function GraphPage() {
   const [dim, setDim] = useState<GraphDimension>('2d');
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('graph-dimension') as
-        | GraphDimension
-        | null;
+      const saved = localStorage.getItem(
+        'graph-dimension'
+      ) as GraphDimension | null;
       if (saved === '2d' || saved === '3d') setDim(saved);
     } catch {}
   }, []);
@@ -286,15 +286,17 @@ export default function GraphPage() {
     colorMode === 'community' ? 'communityId' : (mode as 'company' | 'title');
 
   if (raw.length === 0) {
-    return <div className="text-gray-600">No data yet. Import a CSV.</div>;
+    return <div className='text-gray-600'>No data yet. Import a CSV.</div>;
   }
 
   // facet VMs (left)
-  const companyFacets: FacetItem[] = companyCounts.slice(0, 24).map(([v, c]) => ({
-    value: v,
-    count: c,
-    checked: selCompanies.has(v),
-  }));
+  const companyFacets: FacetItem[] = companyCounts
+    .slice(0, 24)
+    .map(([v, c]) => ({
+      value: v,
+      count: c,
+      checked: selCompanies.has(v),
+    }));
   const titleFacets: FacetItem[] = titleCounts.slice(0, 24).map(([v, c]) => ({
     value: v,
     count: c,
@@ -320,7 +322,7 @@ export default function GraphPage() {
 
   return (
     <div
-      className="w-full grid gap-3"
+      className='w-full grid gap-3'
       style={{
         height: 'calc(100vh - 140px)',
         gridTemplateRows: 'auto auto auto minmax(420px,1fr) auto',
@@ -330,7 +332,7 @@ export default function GraphPage() {
       {/* toolbar */}
       <div style={{ gridColumn: '1 / span 2' }}>
         <Toolbar
-          className="max-w-none"
+          className='max-w-none'
           filterText={filterText}
           onFilterTextChange={setFilterText}
           fromDate={fromDate}
@@ -350,7 +352,7 @@ export default function GraphPage() {
       {/* timeline */}
       <div
         style={{ gridColumn: '1 / span 2' }}
-        className="px-1 -mt-2 flex items-center gap-3"
+        className='px-1 -mt-2 flex items-center gap-3'
       >
         <Timeline
           dates={allDates}
@@ -363,7 +365,7 @@ export default function GraphPage() {
       </div>
 
       {/* legend */}
-      <div style={{ gridColumn: '1 / span 2' }} className="px-1">
+      <div style={{ gridColumn: '1 / span 2' }} className='px-1'>
         <Legend
           items={legendItems}
           active={activeEdgeTypes}
@@ -375,14 +377,14 @@ export default function GraphPage() {
               return next;
             })
           }
-          className="mt-1"
+          className='mt-1'
           communityCounts={colorMode === 'community' ? counts : undefined}
-          communityTitle="Communities (node colors)"
+          communityTitle='Communities (node colors)'
         />
       </div>
 
       {/* facets */}
-      <aside className="border rounded p-3 overflow-auto">
+      <aside className='border rounded p-3 overflow-auto'>
         <Facets
           companies={companyFacets}
           titles={titleFacets}
@@ -393,40 +395,50 @@ export default function GraphPage() {
       </aside>
 
       {/* graph */}
-      <main className="border rounded overflow-hidden" style={{ minHeight: 420 }}>
-        <div className="relative h-full" style={{ height: 'var(--graph-height, 66vh)' }}>
+      <main
+        className='border rounded overflow-hidden'
+        style={{ minHeight: 420 }}
+      >
+        <div
+          className='relative h-full'
+          style={{ height: 'var(--graph-height, 66vh)' }}
+        >
           <GraphCanvas
             data={graphForCanvas}
             groupBy={groupByForCanvas}
-            labelMode="zoom"
+            labelMode='zoom'
             dimension={dim}
           />
 
           {/* Top-right controls */}
           <div
-            className="absolute right-3 top-3 z-10 flex items-center gap-2
+            className='absolute right-3 top-3 z-10 flex items-center gap-2
                        rounded-md border border-gray-300 dark:border-gray-700
-                       bg-white/95 dark:bg-gray-900/95 shadow-md px-2 py-1"
+                       bg-white/95 dark:bg-gray-900/95 shadow-md px-2 py-1'
           >
-            <label className="text-xs md:text-sm text-gray-600 dark:text-gray-300 mr-1">Color:</label>
+            <label className='text-xs md:text-sm text-gray-600 dark:text-gray-300 mr-1'>
+              Color:
+            </label>
             <select
-              className="appearance-none text-xs md:text-sm h-8 px-2 rounded-md
+              className='appearance-none text-xs md:text-sm h-8 px-2 rounded-md
                          bg-white dark:bg-gray-800
                          text-gray-900 dark:text-gray-100
                          border border-gray-300 dark:border-gray-600
-                         focus:outline-none focus:ring-2 focus:ring-blue-500"
+                         focus:outline-none focus:ring-2 focus:ring-blue-500'
               value={colorMode}
               onChange={(e) =>
-                setColorMode(e.target.value as 'company' | 'title' | 'community')
+                setColorMode(
+                  e.target.value as 'company' | 'title' | 'community'
+                )
               }
-              aria-label="Color nodes by"
+              aria-label='Color nodes by'
             >
-              <option value="company">Company</option>
-              <option value="title">Title</option>
-              <option value="community">Community (Louvain)</option>
+              <option value='company'>Company</option>
+              <option value='title'>Title</option>
+              <option value='community'>Community (Louvain)</option>
             </select>
 
-            <div className="ml-2">
+            <div className='ml-2'>
               <GraphDimToggle
                 value={dim}
                 onChange={(v) => {
@@ -441,9 +453,9 @@ export default function GraphPage() {
 
           {colorMode === 'community' && (
             <div
-              className="absolute left-3 top-3 z-10 rounded-md
+              className='absolute left-3 top-3 z-10 rounded-md
                          bg-black/70 text-white border border-white/20
-                         px-2 py-1 text-xs shadow-md"
+                         px-2 py-1 text-xs shadow-md'
             >
               {typeof modularity === 'number'
                 ? `Modularity: ${modularity.toFixed(3)}`
@@ -454,29 +466,33 @@ export default function GraphPage() {
       </main>
 
       {/* table */}
-      <section style={{ gridColumn: '1 / span 2' }} className="border rounded p-3 overflow-auto">
-        <h4 className="text-sm font-semibold mb-2">Connections</h4>
-        <table className="w-full text-sm border-collapse">
-          <thead className="bg-gray-50 border-b">
+      <section
+        style={{ gridColumn: '1 / span 2' }}
+        className='border rounded p-3 overflow-auto'
+      >
+        <h4 className='text-sm font-semibold mb-2'>Connections</h4>
+        <table className='w-full text-sm border-collapse'>
+          <thead className='bg-gray-50 border-b'>
             <tr>
-              <th className="px-2 py-1 text-left">Name</th>
-              <th className="px-2 py-1 text-left">Company</th>
-              <th className="px-2 py-1 text-left">Title</th>
-              <th className="px-2 py-1 text-left">ConnectedOn</th>
+              <th className='px-2 py-1 text-left'>Name</th>
+              <th className='px-2 py-1 text-left'>Company</th>
+              <th className='px-2 py-1 text-left'>Title</th>
+              <th className='px-2 py-1 text-left'>ConnectedOn</th>
             </tr>
           </thead>
           <tbody>
             {filteredRows.slice(0, 120).map((r, i) => {
-              const name = [r.firstName, r.lastName].filter(Boolean).join(' ') || '—';
+              const name =
+                [r.firstName, r.lastName].filter(Boolean).join(' ') || '—';
               return (
-                <tr key={i} className="border-b last:border-0">
-                  <td className="px-2 py-1">
+                <tr key={i} className='border-b last:border-0'>
+                  <td className='px-2 py-1'>
                     {r.url ? (
                       <a
                         href={r.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline"
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        className='text-blue-600 hover:underline'
                       >
                         {name}
                       </a>
@@ -484,9 +500,9 @@ export default function GraphPage() {
                       name
                     )}
                   </td>
-                  <td className="px-2 py-1">{r.company ?? '—'}</td>
-                  <td className="px-2 py-1">{r.title ?? '—'}</td>
-                  <td className="px-2 py-1">{r.connectedOn ?? '—'}</td>
+                  <td className='px-2 py-1'>{r.company ?? '—'}</td>
+                  <td className='px-2 py-1'>{r.title ?? '—'}</td>
+                  <td className='px-2 py-1'>{r.connectedOn ?? '—'}</td>
                 </tr>
               );
             })}

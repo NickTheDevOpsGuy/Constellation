@@ -11,7 +11,7 @@ export type GraphDimension = '2d' | '3d';
 type LabelMode = 'zoom' | 'always' | 'none';
 
 type Props = {
-  data: GraphData;                // { nodes, edges }
+  data: GraphData; // { nodes, edges }
   groupBy: 'company' | 'title' | 'communityId';
   labelMode?: LabelMode;
   dimension?: GraphDimension;
@@ -33,7 +33,8 @@ function colorForNode(n: PersonNode | PostNode, groupBy: Props['groupBy']) {
     const key = (n[groupBy] ?? '') as string;
     if (!key) return '#9aa0a6';
     let h = 0;
-    for (let i = 0; i < key.length; i++) h = ((h << 5) - h + key.charCodeAt(i)) | 0;
+    for (let i = 0; i < key.length; i++)
+      h = ((h << 5) - h + key.charCodeAt(i)) | 0;
     const idx = Math.abs(h) % PALETTE.length;
     return PALETTE[idx];
   }
@@ -121,7 +122,11 @@ export default function GraphCanvas({
   const commonProps = {
     nodeId: 'id',
     graphData,
-    nodeCanvasObject: (node: any, ctx: CanvasRenderingContext2D, scale: number) => {
+    nodeCanvasObject: (
+      node: any,
+      ctx: CanvasRenderingContext2D,
+      scale: number
+    ) => {
       const r = 3 + Math.log10((node.degree ?? 1) + 9);
       ctx.beginPath();
       ctx.fillStyle = colorForNode(node, groupBy);
