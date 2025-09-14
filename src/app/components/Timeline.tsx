@@ -14,7 +14,10 @@ function addMonths(d: Date, m: number) {
   return x;
 }
 
-export type TimelineChange = (window: { from: string | undefined; to: string | undefined }) => void;
+export type TimelineChange = (window: {
+  from: string | undefined;
+  to: string | undefined;
+}) => void;
 
 export default function Timeline({
   dates,
@@ -44,7 +47,10 @@ export default function Timeline({
     const end = months[Math.max(0, months.length - 1)];
     const [ey, em] = end.split('-').map(Number);
     const endDate = new Date(ey, em - 1 + 1, 0); // end of month
-    const startDate = addMonths(new Date(ey, em - 1, 1), -initialWindowMonths + 1);
+    const startDate = addMonths(
+      new Date(ey, em - 1, 1),
+      -initialWindowMonths + 1
+    );
     onChange({
       from: startDate.toISOString().slice(0, 10),
       to: endDate.toISOString().slice(0, 10),
@@ -59,7 +65,10 @@ export default function Timeline({
     const end = months[i];
     const [ey, em] = end.split('-').map(Number);
     const endDate = new Date(ey, em - 1 + 1, 0);
-    const startDate = addMonths(new Date(ey, em - 1, 1), -initialWindowMonths + 1);
+    const startDate = addMonths(
+      new Date(ey, em - 1, 1),
+      -initialWindowMonths + 1
+    );
     onChange({
       from: startDate.toISOString().slice(0, 10),
       to: endDate.toISOString().slice(0, 10),
@@ -76,17 +85,21 @@ export default function Timeline({
   }, [playing, months.length]);
 
   if (months.length === 0) {
-    return <div className="text-sm text-white/60">No dates available for timeline</div>;
+    return (
+      <div className='text-sm text-white/60'>
+        No dates available for timeline
+      </div>
+    );
   }
 
   return (
-    <div className="flex items-center gap-3 text-white">
+    <div className='flex items-center gap-3 text-white'>
       <button
-        type="button"
+        type='button'
         onClick={() => setPlaying((p) => !p)}
-        className="rounded-md border border-white/15 bg-black/40 px-2 py-1
+        className='rounded-md border border-white/15 bg-black/40 px-2 py-1
                    text-xs text-white/85 hover:text-white hover:border-white/25
-                   focus:outline-none focus:ring-2 focus:ring-sky-400/50"
+                   focus:outline-none focus:ring-2 focus:ring-sky-400/50'
         aria-pressed={playing}
         title={playing ? 'Pause' : 'Play'}
       >
@@ -94,15 +107,15 @@ export default function Timeline({
       </button>
 
       <input
-        type="range"
+        type='range'
         min={0}
         max={months.length - 1}
         value={i}
         onChange={(e) => setI(Number(e.target.value))}
-        className="w-64 timeline-range"
+        className='w-64 timeline-range'
       />
 
-      <div className="text-xs tabular-nums text-white/80">{months[i]}</div>
+      <div className='text-xs tabular-nums text-white/80'>{months[i]}</div>
 
       {/* dark-mode slider styling (plain <style>, not styled-jsx) */}
       <style>{`
