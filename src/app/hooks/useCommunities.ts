@@ -3,9 +3,13 @@ import { useState, useCallback } from 'react';
 import { UndirectedGraph } from 'graphology';
 import louvain from 'graphology-communities-louvain';
 import modularity from 'graphology-metrics/graph/modularity';
-import type { GraphData, AnyNode } from '../types/linkedin';
+import type { GraphData, AnyNode, PersonNode } from '../types/linkedin';
 
 export type CommunityCounts = Array<{ communityId: number; count: number }>;
+
+function isPerson(n: AnyNode): n is PersonNode {
+  return (n as { kind?: unknown })?.kind === 'person';
+}
 
 export function useCommunities() {
   const [modularityScore, setModularityScore] = useState<number | null>(null);
@@ -13,7 +17,6 @@ export function useCommunities() {
 
   const compute = useCallback((graph: GraphData) => {
     const g = new UndirectedGraph({ multi: false, allowSelfLoops: false });
-    const isPerson = (n: AnyNode) => (n as any).kind === 'person';
 
     // Nodes
     for (const n of graph.nodes) {
@@ -28,21 +31,27 @@ export function useCommunities() {
       }
     }
 
-    // ✅ Hard guard: if empty graph, return empty results (avoids modularity error)
+    // Guard: empty graphs
     if (g.order === 0 || g.size === 0) {
       setModularityScore(0);
       setCounts([]);
-      return { communities: {}, modularity: 0, counts: [] as CommunityCounts };
+      return {
+        communities: {} as Record<string, number>,
+        modularity: 0,
+        counts: [] as CommunityCounts,
+      };
     }
 
     try {
       const communities: Record<string, number> = louvain(g, {
-        getEdgeWeight: (_edge, attr: any) => attr?.weight ?? 1,
+        getEdgeWeight: (_edge: string, attr: Record<string, unknown>) =>
+          typeof attr?.weight === 'number' ? attr.weight : 1,
       });
 
       const mod = modularity(g, {
         getNodeCommunity: (node) => communities[node],
-        getEdgeWeight: (_edge, attr: any) => attr?.weight ?? 1,
+        getEdgeWeight: (_edge: string, attr: Record<string, unknown>) =>
+          typeof attr?.weight === 'number' ? attr.weight : 1,
       });
 
       // Counts
@@ -59,17 +68,19 @@ export function useCommunities() {
 
       return { communities, modularity: mod, counts: nextCounts };
     } catch (e) {
-      // ✅ Safety: if Louvain/modularity throws for any reason, degrade gracefully
       console.warn('[useCommunities] skipped due to error:', e);
       setModularityScore(0);
       setCounts([]);
-      return { communities: {}, modularity: 0, counts: [] as CommunityCounts };
+      return {
+        communities: {} as Record<string, number>,
+        modularity: 0,
+        counts: [] as CommunityCounts,
+      };
     }
   }, []);
 
   const applyCommunities = useCallback(
     (graph: GraphData) => {
-      // Extra guard: skip compute if no edges
       if (!graph?.edges?.length) {
         setModularityScore(0);
         setCounts([]);
@@ -77,13 +88,11 @@ export function useCommunities() {
       }
       const { communities, modularity, counts } = compute(graph);
       const nodes = graph.nodes.map((n) =>
-        (n as any).kind === 'person'
-          ? ({ ...n, communityId: communities[String(n.id)] ?? -1 } as AnyNode)
-          : n
+        isPerson(n) ? ({ ...n, communityId: communities[String(n.id)] ?? -1 } as AnyNode) : n,
       );
       return { graph: { ...graph, nodes }, modularity, counts };
     },
-    [compute]
+    [compute],
   );
 
   return {
