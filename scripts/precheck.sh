@@ -76,12 +76,11 @@ fi
 
 # 2. ESLint check & fix
 echo "🧹 Running ESLint..."
-if ! npm run lint . --fix; then
+if ! npx eslint . --max-warnings=0; then
   echo -e "❌ ESLint errors found that could not be auto-fixed. Aborting push.\n"
   exit 1
 fi
 echo -e "✅ ESLint passed.\n"
-
 
 # 3. Commit any Prettier or lint changes if they exist
 if ! git diff --cached --quiet || ! git diff --quiet; then
@@ -96,3 +95,5 @@ else
 fi
 
 echo -e "🚀 All checks passed. Ready to push!\n"
+
+
