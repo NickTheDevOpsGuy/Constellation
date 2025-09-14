@@ -20,7 +20,7 @@ export function useCommunities() {
   const compute = useCallback((graph: GraphData) => {
     const g = new UndirectedGraph({ multi: false, allowSelfLoops: false });
 
-    // Nodes
+    // Nodes (only people)
     for (const n of graph.nodes) {
       if (isPerson(n)) g.addNode(String(n.id));
     }
@@ -31,6 +31,13 @@ export function useCommunities() {
       if (g.hasNode(s) && g.hasNode(t) && !g.hasEdge(s, t)) {
         g.addEdge(s, t, { weight: e.weight ?? 1 });
       }
+    }
+
+    // 🚨 Guard: graph too small → skip metrics
+    if (g.order < 2 || g.size === 0) {
+      setModularityScore(null);
+      setCounts([]);
+      return { communities: {} as Record<string, number>, modularity: null as number | null, counts: [] as CommunityCounts };
     }
 
     const communities: Record<string, number> = louvain(g, {
@@ -54,7 +61,7 @@ export function useCommunities() {
     setModularityScore(mod);
     setCounts(nextCounts);
 
-    return { communities, modularity: mod, counts: nextCounts };
+    return { communities, modularity: mod as number | null, counts: nextCounts };
   }, []);
 
   const applyCommunities = useCallback(
