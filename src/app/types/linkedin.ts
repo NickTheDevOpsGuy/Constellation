@@ -1,50 +1,74 @@
 // src/app/types/linkedin.ts
 
-/** Base shape shared by all nodes */
-export type BaseNode = {
-  id: string;
-  /** optional x/y/vx/vy for force layout libs */
-  x?: number;
-  y?: number;
-  z?: number;
-  vx?: number;
-  vy?: number;
-  vz?: number;
-};
+/** All edge kinds we render / count in the UI */
+export type EdgeType =
+  | 'connection'
+  | 'invited'
+  | 'authored'
+  | 'commented'
+  | 'liked'
+  | 'reacted'
+  | 'messaged'
+  | 'co_company'
+  | 'co_title';
 
-/** Person nodes (primary graph entities) */
-export type PersonNode = BaseNode & {
+/** CSV row from LinkedIn “Connections.csv” (keep fields optional) */
+export interface LinkedInRawRecord {
+  firstName?: string;
+  lastName?: string;
+  company?: string;
+  title?: string;
+  connectedOn?: string; // ISO or locale date string
+  url?: string; // profile url
+  // allow extra columns without failing typecheck
+  [k: string]: unknown;
+}
+
+interface BaseNode {
+  id: string;
+  kind: 'person' | 'post';
+  name?: string;
+  url?: string;
+}
+
+/** Node for a person (most of your graph) */
+export interface PersonNode extends BaseNode {
   kind: 'person';
   firstName?: string;
   lastName?: string;
-  name?: string;
   company?: string;
   title?: string;
   connectedOn?: string;
   degree?: number;
+  /** injected by community detection */
   communityId?: number;
-  url?: string;
-};
+}
 
-/** You can extend with other node kinds if you use them (e.g., posts) */
-export type OtherNode = BaseNode & {
-  kind: 'other';
-  label?: string;
-};
+/** Node for a LinkedIn post (for interactions graph) */
+export interface PostNode extends BaseNode {
+  kind: 'post';
+  createdAt?: string;
+  topics?: string[];
+}
 
-export type AnyNode = PersonNode | OtherNode;
+/** Union of nodes */
+export type AnyNode = PersonNode | PostNode;
 
-/** Graph edge */
-export type GraphEdge = {
-  id?: string;
-  source: string; // node id
-  target: string; // node id
-  weight?: number; // used by Louvain
-  kind?: 'company' | 'title' | 'interaction' | 'other';
-  timestamp?: string;
-};
+/** Edge in our graph. `kind` is tolerated as an alias for `type`. */
+export interface LinkEdge {
+  source: string | number;
+  target: string | number;
+  type?: EdgeType;
+  kind?: EdgeType; // some parsers fill this
+  date?: string;   // when the interaction happened
+  weight?: number; // used for layout/community detection
+}
 
-export type GraphData = {
+/** Alias kept for older imports */
+export type GraphEdge = LinkEdge;
+
+/** Graph payload used across the app */
+export interface GraphData {
   nodes: AnyNode[];
   edges: GraphEdge[];
-};
+}
