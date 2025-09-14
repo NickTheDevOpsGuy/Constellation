@@ -30,37 +30,13 @@ function countBy<T>(rows: T[], keyOf: (r: T) => string) {
   return [...m.entries()].sort((a, b) => b[1] - a[1]);
 }
 function isPerson(n: PersonNode | PostNode): n is PersonNode {
-  return n.kind === 'person';
+  return (n as PersonNode).kind === 'person';
 }
-function filterNodesByFacets(
-  nodes: PersonNode[],
-  companies: Set<string>,
-  titles: Set<string>
-) {
-  if (companies.size === 0 && titles.size === 0) return nodes;
-  return nodes.filter((n) => {
-    const coOk =
-      companies.size === 0 || (n.company && companies.has(n.company));
-    const tiOk = titles.size === 0 || (n.title && titles.has(n.title));
-    return coOk && tiOk;
-  });
+function isPost(n: PersonNode | PostNode | undefined): n is PostNode {
+  return !!n && (n as PostNode).kind === 'post';
 }
 function normalizeEdgeType(t?: EdgeType): EdgeType {
   return (t ?? 'connection') as EdgeType;
-}
-function filterEdgesByTypes(
-  edges: GraphData['edges'],
-  active: Set<EdgeType | string>,
-  keepIds: Set<string>
-) {
-  return edges.filter((e) => {
-    const t = normalizeEdgeType(e.type);
-    return (
-      active.has(t) &&
-      keepIds.has(String(e.source)) &&
-      keepIds.has(String(e.target))
-    );
-  });
 }
 function edgeTypeCounts(edges: GraphData['edges']) {
   const m = new Map<EdgeType, number>();
@@ -81,7 +57,7 @@ export default function GraphPage() {
   const [minGroup, setMinGroup] = useState(8);
   const [mode, setMode] = useState<Mode>('title');
 
-  // Canvas color mode (company | title | community)
+  // Color mode (company | title | community)
   const [colorMode, setColorMode] = useState<'company' | 'title' | 'community'>(
     mode as 'company' | 'title'
   );
@@ -90,12 +66,10 @@ export default function GraphPage() {
   const [selCompanies, setSelCompanies] = useState<Set<string>>(new Set());
   const [selTitles, setSelTitles] = useState<Set<string>>(new Set());
 
-  // Legend (edge-type visibility) — union to match Legend’s props
-  const [activeEdgeTypes, setActiveEdgeTypes] = useState<
-    Set<EdgeType | string>
-  >(
+  // Legend (edge-type visibility)
+  const [activeEdgeTypes, setActiveEdgeTypes] = useState<Set<string>>(
     () =>
-      new Set<EdgeType | string>([
+      new Set<string>([
         'connection',
         'invited',
         'authored',
@@ -108,22 +82,20 @@ export default function GraphPage() {
       ])
   );
 
-  // Dimension state (2D/3D), persisted in localStorage
+  // Dimension
   const [dim, setDim] = useState<GraphDimension>('2d');
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(
-        'graph-dimension'
-      ) as GraphDimension | null;
+      const saved = localStorage.getItem('graph-dimension') as
+        | GraphDimension
+        | null;
       if (saved === '2d' || saved === '3d') setDim(saved);
-    } catch {
-      // ignore
-    }
+    } catch {}
   }, []);
 
   const q = filterText.toLowerCase();
 
-  // A) toolbar filter
+  // A) Toolbar text + date filter
   const baseRows = useMemo(
     () =>
       raw.filter((r: LinkedInRawRecord) => {
@@ -132,22 +104,20 @@ export default function GraphPage() {
           (r.company ?? '').toLowerCase().includes(q) ||
           (r.title ?? '').toLowerCase().includes(q) ||
           `${r.firstName} ${r.lastName}`.toLowerCase().includes(q);
-
         const d = r.connectedOn ? new Date(r.connectedOn) : null;
         const inRange =
           (!fromDate || (d && d >= new Date(fromDate))) &&
           (!toDate || (d && d <= new Date(toDate)));
-
         return matchesText && inRange;
       }),
     [raw, q, fromDate, toDate]
   );
 
-  // B) facet counts
+  // B) Facet counts (for left panel)
   const companyCounts = countBy(baseRows, (r) => r.company ?? '');
   const titleCounts = countBy(baseRows, (r) => r.title ?? '');
 
-  // C) rows after facets
+  // C) Apply facets to the rows (drives both table & graph)
   const filteredRows = useMemo(() => {
     if (selCompanies.size === 0 && selTitles.size === 0) return baseRows;
     return baseRows.filter((r) => {
@@ -158,62 +128,108 @@ export default function GraphPage() {
     });
   }, [baseRows, selCompanies, selTitles]);
 
-  // D) base graph from toolbar-filtered rows
-  const baseGraph = useMemo(
-    () =>
-      rowsToGraph(baseRows, mode, {
-        infer: 'both',
-      }),
-    [baseRows, mode]
+  // D) Build graph from *faceted* rows
+  const facetedGraph = useMemo(
+    () => rowsToGraph(filteredRows, mode, { infer: 'both' }),
+    [filteredRows, mode]
   );
 
-  // Dates for timeline
+  // Dates for timeline scrubber
   const allDates = useMemo(() => {
     const ds: string[] = [];
     for (const r of raw) if (r.connectedOn) ds.push(r.connectedOn);
-    for (const e of baseGraph.edges ?? []) {
+    for (const e of facetedGraph.edges ?? []) {
       if ('date' in e && e.date) ds.push(e.date as string);
     }
     return ds;
-  }, [raw, baseGraph.edges]);
+  }, [raw, facetedGraph.edges]);
 
-  // E) thin graph
-  const thinned = useMemo(
-    () =>
-      quickFilterGraph(baseGraph, {
-        q: filterText,
-        from: fromDate,
-        to: toDate,
-        limit: 400,
-        minGroup,
-        topKGroups: 8,
-        hideIsolates: true,
-        mode,
-      }),
-    [baseGraph, filterText, fromDate, toDate, minGroup, mode]
+  // E) Thin the *faceted* graph — adaptively (be gentle on small slices)
+  const thinned = useMemo(() => {
+    const nodeCount = facetedGraph.nodes?.length ?? 0;
+    const edgeCount = facetedGraph.edges?.length ?? 0;
+    const facetsOn = selCompanies.size > 0 || selTitles.size > 0;
+    const smallSlice = nodeCount <= 250 || edgeCount <= 400 || facetsOn;
+
+    const params = smallSlice
+      ? {
+          q: filterText,
+          from: fromDate,
+          to: toDate,
+          limit: Math.max(2000, edgeCount + 200),
+          minGroup: 1,
+          topKGroups: 999,
+          hideIsolates: false,
+          mode,
+        }
+      : {
+          q: filterText,
+          from: fromDate,
+          to: toDate,
+          limit: 400,
+          minGroup,
+          topKGroups: 8,
+          hideIsolates: true,
+          mode,
+        };
+
+    return quickFilterGraph(facetedGraph, params as any);
+  }, [
+    facetedGraph,
+    filterText,
+    fromDate,
+    toDate,
+    minGroup,
+    selCompanies.size,
+    selTitles.size,
+    mode,
+  ]);
+
+  // Make id→node map
+  const nodeById = useMemo(() => {
+    const m = new Map<string, PersonNode | PostNode>();
+    for (const n of thinned.nodes ?? []) m.set(String(n.id), n);
+    return m;
+  }, [thinned.nodes]);
+
+  // F) Keep people matching facets; include their connected posts
+  const { preLegendEdges, keptIds } = useMemo(() => {
+    const people = (thinned.nodes ?? []).filter(isPerson);
+    const keptPeople = people.filter((n) => {
+      const coOk =
+        selCompanies.size === 0 || (n.company && selCompanies.has(n.company));
+      const tiOk = selTitles.size === 0 || (n.title && selTitles.has(n.title));
+      return coOk && tiOk;
+    });
+    const keptPersonIds = new Set(keptPeople.map((n) => String(n.id)));
+
+    const preLegendEdges = (thinned.edges ?? []).filter((e) => {
+      const s = String(e.source);
+      const t = String(e.target);
+      const sKept = keptPersonIds.has(s) && isPerson(nodeById.get(s)!);
+      const tKept = keptPersonIds.has(t) && isPerson(nodeById.get(t)!);
+      return sKept || tKept;
+    });
+
+    const keptIds = new Set<string>(keptPersonIds);
+    for (const e of preLegendEdges) {
+      const s = String(e.source);
+      const t = String(e.target);
+      const sn = nodeById.get(s);
+      const tn = nodeById.get(t);
+      if (isPost(sn)) keptIds.add(s);
+      if (isPost(tn)) keptIds.add(t);
+    }
+    return { preLegendEdges, keptIds };
+  }, [thinned.nodes, thinned.edges, selCompanies, selTitles, nodeById]);
+
+  // G) Legend counts from the subset-before-legend
+  const countsBeforeLegend = useMemo(
+    () => edgeTypeCounts(preLegendEdges),
+    [preLegendEdges]
   );
-
-  // F) nodes after facets
-  const nodesAfterFacets = useMemo(() => {
-    const peopleOnly = (thinned.nodes ?? []).filter(isPerson);
-    return filterNodesByFacets(peopleOnly, selCompanies, selTitles);
-  }, [thinned.nodes, selCompanies, selTitles]);
-
-  const keptIds = useMemo(
-    () => new Set(nodesAfterFacets.map((n) => n.id)),
-    [nodesAfterFacets]
-  );
-
-  // G) legend counts
-  const countsBeforeLegend = useMemo(() => {
-    const prelim = (thinned.edges ?? []).filter(
-      (e) => keptIds.has(String(e.source)) && keptIds.has(String(e.target))
-    );
-    return edgeTypeCounts(prelim);
-  }, [thinned.edges, keptIds]);
-
   const legendItems = useMemo(() => {
-    const ordered: EdgeType[] = [
+    const order: EdgeType[] = [
       'connection',
       'invited',
       'authored',
@@ -224,70 +240,77 @@ export default function GraphPage() {
       'co_company',
       'co_title',
     ];
-    return ordered
-      .map((t) => ({ type: t, count: countsBeforeLegend.get(t) ?? 0 }))
+    return order
+      .map((t) => ({ type: String(t), count: countsBeforeLegend.get(t) ?? 0 }))
       .filter((i) => i.count > 0);
   }, [countsBeforeLegend]);
 
-  // H) apply legend filter
+  // H) Apply legend filter (string keys)
   const edgesAfterLegend = useMemo(
-    () => filterEdgesByTypes(thinned.edges ?? [], activeEdgeTypes, keptIds),
-    [thinned.edges, activeEdgeTypes, keptIds]
+    () =>
+      preLegendEdges.filter((e) =>
+        activeEdgeTypes.has(String(normalizeEdgeType(e.type)))
+      ),
+    [preLegendEdges, activeEdgeTypes]
   );
+
+  // I) Final nodes = kept people + any posts referenced by edgesAfterLegend
+  const nodesAfterLegend = useMemo(() => {
+    const ids = new Set<string>(keptIds);
+    for (const e of edgesAfterLegend) {
+      ids.add(String(e.source));
+      ids.add(String(e.target));
+    }
+    const out: Array<PersonNode | PostNode> = [];
+    for (const id of ids) {
+      const n = nodeById.get(id);
+      if (n) out.push(n);
+    }
+    return out;
+  }, [edgesAfterLegend, keptIds, nodeById]);
 
   const finalGraph: GraphData = useMemo(
-    () => ({ nodes: nodesAfterFacets, edges: edgesAfterLegend }),
-    [nodesAfterFacets, edgesAfterLegend]
+    () => ({ nodes: nodesAfterLegend, edges: edgesAfterLegend }),
+    [nodesAfterLegend, edgesAfterLegend]
   );
 
-  // Communities (computed on *already filtered* graph)
+  // J) Optional communities
   const { applyCommunities, modularity, counts } = useCommunities();
-
   const graphForCanvas: GraphData = useMemo(() => {
     if (colorMode !== 'community') return finalGraph;
-    const { graph: withComms } = applyCommunities(finalGraph);
-    return withComms;
+    const { graph } = applyCommunities(finalGraph);
+    return graph;
   }, [finalGraph, colorMode, applyCommunities]);
 
   const groupByForCanvas =
     colorMode === 'community' ? 'communityId' : (mode as 'company' | 'title');
 
   if (raw.length === 0) {
-    return (
-      <div className='text-gray-600'>
-        No data yet. Go to Import and upload a CSV.
-      </div>
-    );
+    return <div className="text-gray-600">No data yet. Import a CSV.</div>;
   }
 
-  // facet VMs
-  const companyFacets: FacetItem[] = companyCounts
-    .slice(0, 24)
-    .map(([value, count]) => ({
-      value,
-      count,
-      checked: selCompanies.has(value),
-    }));
-  const titleFacets: FacetItem[] = titleCounts
-    .slice(0, 24)
-    .map(([value, count]) => ({
-      value,
-      count,
-      checked: selTitles.has(value),
-    }));
+  // facet VMs (left)
+  const companyFacets: FacetItem[] = companyCounts.slice(0, 24).map(([v, c]) => ({
+    value: v,
+    count: c,
+    checked: selCompanies.has(v),
+  }));
+  const titleFacets: FacetItem[] = titleCounts.slice(0, 24).map(([v, c]) => ({
+    value: v,
+    count: c,
+    checked: selTitles.has(v),
+  }));
 
   const toggleCompany = (v: string) =>
     setSelCompanies((prev) => {
       const n = new Set(prev);
-      if (n.has(v)) n.delete(v);
-      else n.add(v);
+      n.has(v) ? n.delete(v) : n.add(v);
       return n;
     });
   const toggleTitle = (v: string) =>
     setSelTitles((prev) => {
       const n = new Set(prev);
-      if (n.has(v)) n.delete(v);
-      else n.add(v);
+      n.has(v) ? n.delete(v) : n.add(v);
       return n;
     });
   const clearFacets = () => {
@@ -297,7 +320,7 @@ export default function GraphPage() {
 
   return (
     <div
-      className='w-full grid gap-3'
+      className="w-full grid gap-3"
       style={{
         height: 'calc(100vh - 140px)',
         gridTemplateRows: 'auto auto auto minmax(420px,1fr) auto',
@@ -307,7 +330,7 @@ export default function GraphPage() {
       {/* toolbar */}
       <div style={{ gridColumn: '1 / span 2' }}>
         <Toolbar
-          className='max-w-none'
+          className="max-w-none"
           filterText={filterText}
           onFilterTextChange={setFilterText}
           fromDate={fromDate}
@@ -327,7 +350,7 @@ export default function GraphPage() {
       {/* timeline */}
       <div
         style={{ gridColumn: '1 / span 2' }}
-        className='px-1 -mt-2 flex items-center gap-3'
+        className="px-1 -mt-2 flex items-center gap-3"
       >
         <Timeline
           dates={allDates}
@@ -339,28 +362,27 @@ export default function GraphPage() {
         />
       </div>
 
-      {/* legend (now aware of community mode) */}
-      <div style={{ gridColumn: '1 / span 2' }} className='px-1'>
+      {/* legend */}
+      <div style={{ gridColumn: '1 / span 2' }} className="px-1">
         <Legend
           items={legendItems}
           active={activeEdgeTypes}
-          onToggle={(t: EdgeType | string) =>
+          onToggle={(t: string) =>
             setActiveEdgeTypes((prev) => {
+              const k = String(t);
               const next = new Set(prev);
-              if (next.has(t)) next.delete(t);
-              else next.add(t);
+              next.has(k) ? next.delete(k) : next.add(k);
               return next;
             })
           }
-          className='mt-1'
-          /* ✅ Only pass communityCounts in community mode */
+          className="mt-1"
           communityCounts={colorMode === 'community' ? counts : undefined}
-          communityTitle='Communities (node colors)'
+          communityTitle="Communities (node colors)"
         />
       </div>
 
       {/* facets */}
-      <aside className='border rounded p-3 overflow-auto'>
+      <aside className="border rounded p-3 overflow-auto">
         <Facets
           companies={companyFacets}
           titles={titleFacets}
@@ -371,71 +393,57 @@ export default function GraphPage() {
       </aside>
 
       {/* graph */}
-      <main
-        className='border rounded overflow-hidden'
-        style={{ minHeight: 420 }}
-      >
-        <div
-          className='relative h-full'
-          style={{ height: 'var(--graph-height, 66vh)' }}
-        >
+      <main className="border rounded overflow-hidden" style={{ minHeight: 420 }}>
+        <div className="relative h-full" style={{ height: 'var(--graph-height, 66vh)' }}>
           <GraphCanvas
             data={graphForCanvas}
             groupBy={groupByForCanvas}
-            labelMode='zoom'
+            labelMode="zoom"
             dimension={dim}
           />
 
-          {/* Top-right controls (high-contrast) */}
+          {/* Top-right controls */}
           <div
-            className='absolute right-3 top-3 z-10 flex items-center gap-2
+            className="absolute right-3 top-3 z-10 flex items-center gap-2
                        rounded-md border border-gray-300 dark:border-gray-700
-                       bg-white/95 dark:bg-gray-900/95 shadow-md px-2 py-1'
+                       bg-white/95 dark:bg-gray-900/95 shadow-md px-2 py-1"
           >
-            <label className='text-xs md:text-sm text-gray-600 dark:text-gray-300 mr-1'>
-              Color:
-            </label>
+            <label className="text-xs md:text-sm text-gray-600 dark:text-gray-300 mr-1">Color:</label>
             <select
-              className='appearance-none text-xs md:text-sm h-8 px-2 rounded-md
+              className="appearance-none text-xs md:text-sm h-8 px-2 rounded-md
                          bg-white dark:bg-gray-800
                          text-gray-900 dark:text-gray-100
                          border border-gray-300 dark:border-gray-600
-                         focus:outline-none focus:ring-2 focus:ring-blue-500'
+                         focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={colorMode}
               onChange={(e) =>
-                setColorMode(
-                  e.target.value as 'company' | 'title' | 'community'
-                )
+                setColorMode(e.target.value as 'company' | 'title' | 'community')
               }
-              aria-label='Color nodes by'
+              aria-label="Color nodes by"
             >
-              <option value='company'>Company</option>
-              <option value='title'>Title</option>
-              <option value='community'>Community (Louvain)</option>
+              <option value="company">Company</option>
+              <option value="title">Title</option>
+              <option value="community">Community (Louvain)</option>
             </select>
 
-            <div className='ml-2'>
+            <div className="ml-2">
               <GraphDimToggle
                 value={dim}
                 onChange={(v) => {
                   setDim(v);
                   try {
                     localStorage.setItem('graph-dimension', v);
-                  } catch {
-                    // ignore (e.g., private mode / disabled storage)
-                    return;
-                  }
+                  } catch {}
                 }}
               />
             </div>
           </div>
 
-          {/* Modularity badge (high-contrast) */}
           {colorMode === 'community' && (
             <div
-              className='absolute left-3 top-3 z-10 rounded-md
+              className="absolute left-3 top-3 z-10 rounded-md
                          bg-black/70 text-white border border-white/20
-                         px-2 py-1 text-xs shadow-md'
+                         px-2 py-1 text-xs shadow-md"
             >
               {typeof modularity === 'number'
                 ? `Modularity: ${modularity.toFixed(3)}`
@@ -446,33 +454,29 @@ export default function GraphPage() {
       </main>
 
       {/* table */}
-      <section
-        style={{ gridColumn: '1 / span 2' }}
-        className='border rounded p-3 overflow-auto'
-      >
-        <h4 className='text-sm font-semibold mb-2'>Connections</h4>
-        <table className='w-full text-sm border-collapse'>
-          <thead className='bg-gray-50 border-b'>
+      <section style={{ gridColumn: '1 / span 2' }} className="border rounded p-3 overflow-auto">
+        <h4 className="text-sm font-semibold mb-2">Connections</h4>
+        <table className="w-full text-sm border-collapse">
+          <thead className="bg-gray-50 border-b">
             <tr>
-              <th className='px-2 py-1 text-left'>Name</th>
-              <th className='px-2 py-1 text-left'>Company</th>
-              <th className='px-2 py-1 text-left'>Title</th>
-              <th className='px-2 py-1 text-left'>ConnectedOn</th>
+              <th className="px-2 py-1 text-left">Name</th>
+              <th className="px-2 py-1 text-left">Company</th>
+              <th className="px-2 py-1 text-left">Title</th>
+              <th className="px-2 py-1 text-left">ConnectedOn</th>
             </tr>
           </thead>
           <tbody>
             {filteredRows.slice(0, 120).map((r, i) => {
-              const name =
-                [r.firstName, r.lastName].filter(Boolean).join(' ') || '—';
+              const name = [r.firstName, r.lastName].filter(Boolean).join(' ') || '—';
               return (
-                <tr key={i} className='border-b last:border-0'>
-                  <td className='px-2 py-1'>
+                <tr key={i} className="border-b last:border-0">
+                  <td className="px-2 py-1">
                     {r.url ? (
                       <a
                         href={r.url}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className='text-blue-600 hover:underline'
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline"
                       >
                         {name}
                       </a>
@@ -480,26 +484,14 @@ export default function GraphPage() {
                       name
                     )}
                   </td>
-                  <td className='px-2 py-1'>{r.company ?? '—'}</td>
-                  <td className='px-2 py-1'>{r.title ?? '—'}</td>
-                  <td className='px-2 py-1'>{r.connectedOn ?? '—'}</td>
+                  <td className="px-2 py-1">{r.company ?? '—'}</td>
+                  <td className="px-2 py-1">{r.title ?? '—'}</td>
+                  <td className="px-2 py-1">{r.connectedOn ?? '—'}</td>
                 </tr>
               );
             })}
           </tbody>
         </table>
-
-        {colorMode === 'community' &&
-          Array.isArray(counts) &&
-          counts.length > 0 && (
-            <div className='text-xs text-gray-600 mt-2'>
-              <strong>Top communities:</strong>{' '}
-              {counts
-                .slice(0, 6)
-                .map((c) => `#${c.communityId} (${c.count})`)
-                .join(', ')}
-            </div>
-          )}
       </section>
     </div>
   );
