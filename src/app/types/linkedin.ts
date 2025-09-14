@@ -60,7 +60,7 @@ export interface LinkEdge {
   target: string | number;
   type?: EdgeType;
   kind?: EdgeType; // some parsers fill this
-  date?: string;   // when the interaction happened
+  date?: string; // when the interaction happened
   weight?: number; // used for layout/community detection
 }
 
