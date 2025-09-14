@@ -65,7 +65,8 @@ function nodeFill(n: PersonNode | PostNode, groupBy: Props['groupBy']) {
       : String(n[groupBy] ?? '');
   if (!key) return '#9aa0a6';
   let h = 0;
-  for (let i = 0; i < key.length; i++) h = ((h << 5) - h + key.charCodeAt(i)) | 0;
+  for (let i = 0; i < key.length; i++)
+    h = ((h << 5) - h + key.charCodeAt(i)) | 0;
   return PALETTE[Math.abs(h) % PALETTE.length];
 }
 
@@ -118,7 +119,11 @@ export default function GraphCanvas({
     return ((n as unknown as PostNode).title ?? 'post') as string;
   };
 
-  const drawNode = (node: ForceNode, ctx: CanvasRenderingContext2D, scale: number) => {
+  const drawNode = (
+    node: ForceNode,
+    ctx: CanvasRenderingContext2D,
+    scale: number
+  ) => {
     const degree = node.degree ?? 0;
     const baseR = 3 + Math.sqrt(degree) * 0.9;
     const r = Math.max(4, Math.min(14, baseR));
@@ -143,7 +148,10 @@ export default function GraphCanvas({
     }
 
     // Label
-    const show = labelMode === 'always' || (labelMode === 'zoom' && scale > 1.4) || degree >= 10;
+    const show =
+      labelMode === 'always' ||
+      (labelMode === 'zoom' && scale > 1.4) ||
+      degree >= 10;
     if (show) {
       const label = nodeLabel(node);
       if (label) {
@@ -158,8 +166,10 @@ export default function GraphCanvas({
     }
   };
 
-  const linkColor = (l: ForceLink) => `${EDGE_COLOR[l.type ?? ''] ?? '#7a7a7a'}88`;
-  const linkWidth = (l: ForceLink) => Math.min(2.2, 0.6 + Math.log2((l.weight ?? 1) + 1));
+  const linkColor = (l: ForceLink) =>
+    `${EDGE_COLOR[l.type ?? ''] ?? '#7a7a7a'}88`;
+  const linkWidth = (l: ForceLink) =>
+    Math.min(2.2, 0.6 + Math.log2((l.weight ?? 1) + 1));
   const linkCurvature = () => 0.15;
 
   return (
@@ -177,13 +187,15 @@ export default function GraphCanvas({
     >
       <ForceGraph2D
         ref={fgRef as React.MutableRefObject<FGInstance>}
-        nodeId="id"
+        nodeId='id'
         graphData={graphData}
         nodeCanvasObject={drawNode}
         linkColor={linkColor}
         linkWidth={linkWidth}
         linkCurvature={linkCurvature}
-        linkDirectionalParticles={(l: ForceLink) => (l.type === 'connection' ? 0 : 1)}
+        linkDirectionalParticles={(l: ForceLink) =>
+          l.type === 'connection' ? 0 : 1
+        }
         linkDirectionalParticleWidth={1.2}
         cooldownTicks={150}
         d3VelocityDecay={0.35}

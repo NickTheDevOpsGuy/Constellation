@@ -1,4 +1,9 @@
-import type { EdgeType, LinkEdge, PersonNode, PostNode } from '../types/linkedin';
+import type {
+  EdgeType,
+  LinkEdge,
+  PersonNode,
+  PostNode,
+} from '../types/linkedin';
 
 export type BuildEdgesInput = {
   people: PersonNode[];
@@ -20,7 +25,7 @@ export type BuildEdgesInput = {
 function starEdges(
   nodes: PersonNode[],
   keyOf: (n: PersonNode) => string,
-  type: EdgeType,
+  type: EdgeType
 ): LinkEdge[] {
   const buckets = new Map<string, string[]>();
   for (const n of nodes) {
@@ -80,7 +85,13 @@ export function buildEdges(input: BuildEdgesInput): LinkEdge[] {
   }
 
   if (interactions.length) {
-    const allowed: EdgeType[] = ['authored', 'commented', 'liked', 'reacted', 'messaged'];
+    const allowed: EdgeType[] = [
+      'authored',
+      'commented',
+      'liked',
+      'reacted',
+      'messaged',
+    ];
     for (const ix of interactions) {
       if (!allowed.includes(ix.type)) continue;
       if (!enabled.has(ix.type)) continue;
@@ -96,7 +107,8 @@ export function buildEdges(input: BuildEdgesInput): LinkEdge[] {
   // 2) Aggregate duplicates → set weight, keep most recent date
   type Key = string;
   const agg = new Map<Key, LinkEdge & { weight: number }>();
-  const keyOf = (e: LinkEdge) => `${e.source}::${e.type ?? 'connection'}::${e.target}`;
+  const keyOf = (e: LinkEdge) =>
+    `${e.source}::${e.type ?? 'connection'}::${e.target}`;
 
   for (const e of raw) {
     const k = keyOf(e);
