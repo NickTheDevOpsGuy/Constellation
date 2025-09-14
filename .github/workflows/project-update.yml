@@ -19,7 +19,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # REQUIRED: Set this repo variable in Settings → Variables → Repository variables
-      # to the numeric project ID (the number at the end of the Project URL).
       PROJECT_NUMBER: ${{ vars.PROJECT_NUMBER }}
       # Optional: override if your project is under a different owner (org/user).
       PROJECT_OWNER: ${{ vars.PROJECT_OWNER || github.repository_owner }}
@@ -42,8 +41,8 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            // github, core, context are injected by actions/github-script
             const fs = require('fs');
-            const core = require('@actions/core');
 
             const START_BACKLOG = '<!-- START:BACKLOG -->';
             const END_BACKLOG   = '<!-- END:BACKLOG -->';
@@ -138,8 +137,8 @@ jobs:
               const c = node.content;
               const repo = c?.repository?.nameWithOwner || '';
               const title = c?.title || '(draft project item)';
-              let url = c?.url || undefined;
-              let number = c?.number || undefined;
+              const url = c?.url || undefined;
+              const number = c?.number || undefined;
 
               // Pick the "finished" timestamp
               const finishedAt = c?.mergedAt || c?.closedAt || null;
