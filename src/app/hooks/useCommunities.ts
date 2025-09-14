@@ -37,7 +37,11 @@ export function useCommunities() {
     if (g.order < 2 || g.size === 0) {
       setModularityScore(null);
       setCounts([]);
-      return { communities: {} as Record<string, number>, modularity: null as number | null, counts: [] as CommunityCounts };
+      return {
+        communities: {} as Record<string, number>,
+        modularity: null as number | null,
+        counts: [] as CommunityCounts,
+      };
     }
 
     const communities: Record<string, number> = louvain(g, {
@@ -61,7 +65,11 @@ export function useCommunities() {
     setModularityScore(mod);
     setCounts(nextCounts);
 
-    return { communities, modularity: mod as number | null, counts: nextCounts };
+    return {
+      communities,
+      modularity: mod as number | null,
+      counts: nextCounts,
+    };
   }, []);
 
   const applyCommunities = useCallback(
