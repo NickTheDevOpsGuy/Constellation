@@ -243,6 +243,8 @@ export default function GraphPage() {
 
   const graphForCanvas: GraphData = useMemo(() => {
     if (colorMode !== 'community') return finalGraph;
+    // ✅ Optional early guard: if no edges left, skip compute (hook also guards)
+    if (!finalGraph.edges?.length) return finalGraph;
     const { graph: withComms } = applyCommunities(finalGraph);
     return withComms;
   }, [finalGraph, colorMode, applyCommunities]);
@@ -293,6 +295,29 @@ export default function GraphPage() {
     setSelTitles(new Set());
   };
 
+  // ✅ Mutually exclusive legend toggles for co_company vs co_title
+  function toggleEdgeTypeExclusive(t: EdgeType) {
+    setActiveEdgeTypes((prev) => {
+      const next = new Set(prev);
+      const isOn = next.has(t);
+
+      const turnOn = () => {
+        next.add(t);
+        if (t === 'co_company') next.delete('co_title');
+        if (t === 'co_title') next.delete('co_company');
+      };
+
+      if (isOn) {
+        // Turn OFF current
+        next.delete(t);
+      } else {
+        // Turn ON current (and enforce exclusivity if needed)
+        turnOn();
+      }
+      return next;
+    });
+  }
+
   return (
     <div
       className='w-full grid gap-3'
@@ -342,14 +367,7 @@ export default function GraphPage() {
         <Legend
           items={legendItems}
           active={activeEdgeTypes}
-          onToggle={(t) =>
-            setActiveEdgeTypes((prev) => {
-              const next = new Set(prev);
-              if (next.has(t)) next.delete(t);
-              else next.add(t);
-              return next;
-            })
-          }
+          onToggle={(t) => toggleEdgeTypeExclusive(t)}
           className='mt-1'
           /* ✅ Only pass communityCounts in community mode */
           communityCounts={colorMode === 'community' ? counts : undefined}
