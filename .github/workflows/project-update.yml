@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write # allow committing to same-repo PR branches
+  contents: write
   pull-requests: write
 
 concurrency:
@@ -17,6 +17,15 @@ jobs:
   update-readme:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
+    env:
+      # REQUIRED: Set this repo variable in Settings → Variables → Repository variables
+      # to the numeric project ID (the number at the end of the Project URL).
+      PROJECT_NUMBER: ${{ vars.PROJECT_NUMBER }}
+      # Optional: override if your project is under a different owner (org/user).
+      PROJECT_OWNER: ${{ vars.PROJECT_OWNER || github.repository_owner }}
+      # Tweak how many recently-finished items to show and what “recent” means.
+      JUST_FINISHED_LIMIT: "10"
+      JUST_FINISHED_DAYS: "21"
 
     steps:
       - name: ⬇️ Checkout PR HEAD (contributor branch)
@@ -27,97 +36,166 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
-      - name: 📝 Build “Next steps” + “Achievements” and patch README (no push yet)
+      - name: 📝 Build Backlog & Just Finished from GitHub Project and patch README (no push yet)
         id: patch
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
+            const core = require('@actions/core');
 
-            // Built-in labels you want to include
-            const TARGET_LABELS = [
-              'bug',
-              'enhancement',
-              'help wanted',
-              'good first issue',
-              'documentation'
-            ];
-            const MAX_ACHIEVEMENTS = 5;
+            const START_BACKLOG = '<!-- START:BACKLOG -->';
+            const END_BACKLOG   = '<!-- END:BACKLOG -->';
+            const START_JF      = '<!-- START:JUST_FINISHED -->';
+            const END_JF        = '<!-- END:JUST_FINISHED -->';
 
-            const START_NEXT = '<!-- START:NEXT_STEPS -->';
-            const END_NEXT   = '<!-- END:NEXT_STEPS -->';
-            const START_ACH  = '<!-- START:ACHIEVEMENTS -->';
-            const END_ACH    = '<!-- END:ACHIEVEMENTS -->';
+            function mustHaveMarkers(content) {
+              if (!content.includes(START_BACKLOG) || !content.includes(END_BACKLOG)) {
+                core.setFailed('README missing BACKLOG markers.');
+              }
+              if (!content.includes(START_JF) || !content.includes(END_JF)) {
+                core.setFailed('README missing JUST_FINISHED markers.');
+              }
+            }
 
-            function hasMarker(c, s, e){ return c.includes(s) && c.includes(e); }
+            const projectOwner = process.env.PROJECT_OWNER;
+            const projectNumber = Number(process.env.PROJECT_NUMBER || 0);
+            if (!projectOwner || !projectNumber) {
+              core.setFailed('PROJECT_OWNER/PROJECT_NUMBER not set. Add repo variable PROJECT_NUMBER (and optionally PROJECT_OWNER).');
+            }
 
-            async function listIssues({ state, labelsAND=[], per_page=50 }) {
-              const out = [];
-              let page = 1;
+            const repoFull = `${context.repo.owner}/${context.repo.repo}`;
+            const limitJF = Number(process.env.JUST_FINISHED_LIMIT || 10);
+            const daysJF  = Number(process.env.JUST_FINISHED_DAYS || 21);
+            const sinceJF = new Date(Date.now() - daysJF * 24*60*60*1000);
+
+            // Fetch all items from the Project (v2) via GraphQL, paging as needed
+            async function fetchProjectItems() {
+              let items = [];
+              let after = null;
               while (true) {
-                const res = await github.rest.issues.listForRepo({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  state,
-                  labels: labelsAND.join(','),
-                  per_page, page,
-                  sort: 'updated', direction: 'desc'
-                });
-                const items = res.data.filter(x => !x.pull_request);
-                out.push(...items);
-                if (res.data.length < per_page) break;
-                page++;
+                const q = `
+                  query($login:String!, $number:Int!, $after:String) {
+                    user(login:$login) {
+                      projectV2(number:$number) {
+                        id
+                        items(first: 100, after: $after) {
+                          nodes {
+                            id
+                            updatedAt
+                            content {
+                              __typename
+                              ... on Issue {
+                                title number url closedAt updatedAt
+                                repository { nameWithOwner }
+                              }
+                              ... on PullRequest {
+                                title number url mergedAt closedAt updatedAt
+                                repository { nameWithOwner }
+                              }
+                            }
+                            fieldValues(first: 20) {
+                              nodes {
+                                ... on ProjectV2ItemFieldSingleSelectValue {
+                                  field { ... on ProjectV2SingleSelectField { name } }
+                                  name
+                                }
+                              }
+                            }
+                          }
+                          pageInfo { hasNextPage endCursor }
+                        }
+                      }
+                    }
+                  }
+                `;
+                const data = await github.graphql(q, { login: projectOwner, number: projectNumber, after });
+                const pv2 = data?.user?.projectV2;
+                if (!pv2) core.setFailed(`Project not found for owner=${projectOwner} number=${projectNumber}.`);
+                const page = pv2.items.nodes;
+                items = items.concat(page);
+                const pi = pv2.items.pageInfo;
+                if (!pi.hasNextPage) break;
+                after = pi.endCursor;
               }
-              return out;
+              return items;
             }
 
-            async function listAnyOfLabels(state, labels) {
-              const seen = new Set();
-              const all = [];
-              for (const lb of labels) {
-                const batch = await listIssues({ state, labelsAND: [lb] });
-                for (const it of batch) {
-                  if (!seen.has(it.id)) { seen.add(it.id); all.push(it); }
-                }
+            const items = await fetchProjectItems();
+
+            // Helper to read the project's "Status" single-select
+            function getStatusName(node) {
+              for (const fv of node.fieldValues.nodes || []) {
+                if (fv?.field?.name === 'Status') return fv.name; // e.g., Backlog, Ready, In progress, In review, Done
               }
-              all.sort((a,b) => new Date(b.updated_at) - new Date(a.updated_at));
-              return all;
+              return undefined;
             }
 
-            const nextIssues = await listAnyOfLabels('open', TARGET_LABELS);
-            let achIssues = await listAnyOfLabels('closed', TARGET_LABELS);
-            achIssues = achIssues.slice(0, MAX_ACHIEVEMENTS);
+            // Normalize item into a simple record
+            function normalize(node) {
+              const status = getStatusName(node) || '';
+              const c = node.content;
+              const repo = c?.repository?.nameWithOwner || '';
+              const title = c?.title || '(draft project item)';
+              let url = c?.url || undefined;
+              let number = c?.number || undefined;
 
-            const bullet = it => `- [${it.title}](${it.html_url})`;
+              // Pick the "finished" timestamp
+              const finishedAt = c?.mergedAt || c?.closedAt || null;
+              const updatedAt  = new Date(node.updatedAt);
 
-            const nextBullets = nextIssues.length
-              ? nextIssues.map(bullet).join('\n')
-              : '_Nothing cooking right now 💤_';
+              return { status, repo, title, url, number, finishedAt: finishedAt ? new Date(finishedAt) : null, updatedAt };
+            }
 
-            const achBullets = achIssues.length
-              ? achIssues.map(bullet).join('\n')
-              : '_No wins logged yet 🎯_';
+            // Filter to items belonging to this repository only
+            const norm = items.map(normalize).filter(n => n.repo === repoFull);
 
+            // Build Backlog bullets
+            const backlog = norm.filter(n => n.status.toLowerCase() === 'backlog');
+            const backlogBullets = backlog.length
+              ? backlog.map(n => {
+                  const prefix = n.number ? `#${n.number} ` : '';
+                  const link = n.url ? `[${prefix}${n.title}](${n.url})` : `${prefix}${n.title}`;
+                  return `- ${link}`;
+                }).join('\n')
+              : '_No backlog items right now._';
+
+            // Build Just Finished bullets (recently moved to Done)
+            const done = norm.filter(n => n.status.toLowerCase() === 'done');
+            const recentDone = done
+              .map(n => ({ ...n, when: n.finishedAt || n.updatedAt }))
+              .filter(n => n.when >= sinceJF)
+              .sort((a,b) => b.when - a.when)
+              .slice(0, limitJF);
+
+            const jfBullets = recentDone.length
+              ? recentDone.map(n => {
+                  const whenStr = n.when.toISOString().split('T')[0];
+                  const prefix = n.number ? `#${n.number} ` : '';
+                  return `- ${n.url ? `[${prefix}${n.title}](${n.url})` : `${prefix}${n.title}`} — _${whenStr}_`;
+                }).join('\n')
+              : `_No items finished in the last ${daysJF} days._`;
+
+            // Patch README
             const readme = 'README.md';
             if (!fs.existsSync(readme)) core.setFailed('README.md not found.');
-
             let content = fs.readFileSync(readme, 'utf8');
-            if (!hasMarker(content, START_NEXT, END_NEXT)) core.setFailed('NEXT_STEPS markers not found.');
-            if (!hasMarker(content, START_ACH, END_ACH))   core.setFailed('ACHIEVEMENTS markers not found.');
+            mustHaveMarkers(content);
 
-            const blockNext = `${START_NEXT}\n${nextBullets}\n${END_NEXT}`;
-            const blockAch  = `${START_ACH}\n${achBullets}\n${END_ACH}`;
+            const blockBacklog = `${START_BACKLOG}\n${backlogBullets}\n${END_BACKLOG}`;
+            const blockJF      = `${START_JF}\n${jfBullets}\n${END_JF}`;
+
             const patched = content
-              .replace(new RegExp(`${START_NEXT}[\\s\\S]*?${END_NEXT}`, 'm'), blockNext)
-              .replace(new RegExp(`${START_ACH}[\\s\\S]*?${END_ACH}`, 'm'), blockAch);
+              .replace(new RegExp(`${START_BACKLOG}[\\s\\S]*?${END_BACKLOG}`, 'm'), blockBacklog)
+              .replace(new RegExp(`${START_JF}[\\s\\S]*?${END_JF}`, 'm'), blockJF);
 
             const changed = patched !== content;
             if (changed) fs.writeFileSync(readme, patched);
 
             core.setOutput('changed', String(changed));
-            core.setOutput('next', nextBullets);
-            core.setOutput('ach', achBullets);
+            core.setOutput('backlog', backlogBullets);
+            core.setOutput('just_finished', jfBullets);
 
       - name: 🧪 Show diff (debug)
         if: steps.patch.outputs.changed == 'true'
@@ -138,27 +216,27 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add README.md
-          git commit -m "🤖 Update README: Next steps & Achievements [skip ci]"
+          git commit -m "🤖 Update README: Backlog & Just finished [skip ci]"
           git push
 
       - name: 💬 Post/Update sticky PR comment (forked PRs)
         if: steps.patch.outputs.changed == 'true' && steps.route.outputs.route == 'comment'
         uses: marocchino/sticky-pull-request-comment@v2
         with:
-          header: readme-next-achievements
+          header: readme-project-sync
           number: ${{ github.event.pull_request.number }}
           message: |
             ### 📝 README updates (preview)
             This PR comes from a fork, so I can’t push changes to your branch.
 
-            **Next steps**:
+            **Backlog:**
             ```
-            ${{ steps.patch.outputs.next }}
+            ${{ steps.patch.outputs.backlog }}
             ```
 
-            **Achievements lately**:
+            **Just finished:**
             ```
-            ${{ steps.patch.outputs.ach }}
+            ${{ steps.patch.outputs.just_finished }}
             ```
 
             > Maintainers: To commit these changes, run this workflow on a same-repo PR or trigger it with write permissions.
