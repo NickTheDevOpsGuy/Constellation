@@ -24,8 +24,8 @@ jobs:
       # Optional: override if your project is under a different owner (org/user).
       PROJECT_OWNER: ${{ vars.PROJECT_OWNER || github.repository_owner }}
       # Tweak how many recently-finished items to show and what “recent” means.
-      JUST_FINISHED_LIMIT: "10"
-      JUST_FINISHED_DAYS: "21"
+      JUST_FINISHED_LIMIT: '10'
+      JUST_FINISHED_DAYS: '21'
 
     steps:
       - name: ⬇️ Checkout PR HEAD (contributor branch)
