@@ -3,9 +3,15 @@ import { useState, useCallback } from 'react';
 import { UndirectedGraph } from 'graphology';
 import louvain from 'graphology-communities-louvain';
 import modularity from 'graphology-metrics/graph/modularity';
-import type { GraphData, AnyNode } from '../types/linkedin';
+import type { GraphData, AnyNode, PersonNode } from '../types/linkedin';
 
 export type CommunityCounts = Array<{ communityId: number; count: number }>;
+
+function isPerson(n: AnyNode): n is PersonNode {
+  return (n as { kind: unknown }).kind === 'person';
+}
+
+type EdgeAttr = { weight?: number };
 
 export function useCommunities() {
   const [modularityScore, setModularityScore] = useState<number | null>(null);
@@ -13,7 +19,6 @@ export function useCommunities() {
 
   const compute = useCallback((graph: GraphData) => {
     const g = new UndirectedGraph({ multi: false, allowSelfLoops: false });
-    const isPerson = (n: AnyNode) => (n as any).kind === 'person';
 
     // Nodes
     for (const n of graph.nodes) {
@@ -29,12 +34,12 @@ export function useCommunities() {
     }
 
     const communities: Record<string, number> = louvain(g, {
-      getEdgeWeight: (_edge, attr: any) => attr?.weight ?? 1,
+      getEdgeWeight: (_edge, attr?: EdgeAttr) => attr?.weight ?? 1,
     });
 
     const mod = modularity(g, {
       getNodeCommunity: (node) => communities[node],
-      getEdgeWeight: (_edge, attr: any) => attr?.weight ?? 1,
+      getEdgeWeight: (_edge, attr?: EdgeAttr) => attr?.weight ?? 1,
     });
 
     // Counts
@@ -55,14 +60,12 @@ export function useCommunities() {
   const applyCommunities = useCallback(
     (graph: GraphData) => {
       const { communities, modularity, counts } = compute(graph);
-      const nodes = graph.nodes.map((n) =>
-        (n as any).kind === 'person'
-          ? ({ ...n, communityId: communities[String(n.id)] ?? -1 } as AnyNode)
-          : n
+      const nodes: AnyNode[] = graph.nodes.map((n) =>
+        isPerson(n) ? ({ ...n, communityId: communities[String(n.id)] ?? -1 } as AnyNode) : n,
       );
       return { graph: { ...graph, nodes }, modularity, counts };
     },
-    [compute]
+    [compute],
   );
 
   return {
