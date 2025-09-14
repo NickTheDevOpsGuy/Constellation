@@ -1,28 +1,31 @@
 // src/app/components/Toolbar.tsx
+'use client';
+
 import React from 'react';
 
 export type Mode = 'company' | 'title';
 
-type ToolbarProps = {
+type Props = {
+  className?: string;
+
   filterText: string;
-  onFilterTextChange: (t: string) => void;
+  onFilterTextChange: (v: string) => void;
 
   fromDate?: string;
-  onFromDateChange: (d: string) => void;
+  onFromDateChange: (v?: string) => void;
 
   toDate?: string;
-  onToDateChange: (d: string) => void;
+  onToDateChange: (v?: string) => void;
 
   minSize: number;
-  onMinSizeChange: (n: number) => void;
+  onMinSizeChange: (v: number) => void;
 
   mode: Mode;
   onModeChange: (m: Mode) => void;
-
-  className?: string;
 };
 
 export default function Toolbar({
+  className,
   filterText,
   onFilterTextChange,
   fromDate,
@@ -33,108 +36,100 @@ export default function Toolbar({
   onMinSizeChange,
   mode,
   onModeChange,
-  className = '',
-}: ToolbarProps) {
+}: Props) {
   return (
     <div
-      className={`w-full flex flex-wrap items-end gap-4 bg-white/70 backdrop-blur rounded-xl border p-4 ${className}`}
-      role='region'
-      aria-label='Filters toolbar'
+      className={
+        'w-full rounded-md px-3 py-2 border backdrop-blur ' +
+        'bg-black/30 border-white/10 text-white ' +
+        (className ?? '')
+      }
     >
-      {/* 🔎 Search */}
-      <div className='flex-1 min-w-[220px]'>
-        <label
-          htmlFor='tb-search'
-          className='block text-sm font-medium text-gray-700 mb-1'
-        >
-          Search (company, title, or name)
-        </label>
-        <input
-          id='tb-search'
-          type='text'
-          value={filterText}
-          onChange={(e) => onFilterTextChange(e.target.value)}
-          placeholder='e.g. Google, engineer…'
-          className='w-full border rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500'
-        />
-      </div>
+      <div className="grid gap-2 items-center md:grid-cols-[1fr_auto_auto_auto_auto]">
+        {/* Search */}
+        <div className="w-full">
+          <label className="block text-[11px] font-medium text-white/60 mb-1">
+            Search (company, title, or name)
+          </label>
+          <input
+            type="text"
+            value={filterText}
+            onChange={(e) => onFilterTextChange(e.target.value)}
+            placeholder="e.g. Google, engineer..."
+            className="w-full h-9 px-3 rounded-md bg-black/40 text-white
+                       border border-white/15 placeholder-white/50
+                       focus:outline-none focus:ring-1 focus:ring-sky-400"
+          />
+        </div>
 
-      {/* 📅 Date range: From */}
-      <div className='min-w-[160px]'>
-        <label
-          htmlFor='tb-from'
-          className='block text-sm font-medium text-gray-700 mb-1'
-        >
-          From
-        </label>
-        <input
-          id='tb-from'
-          type='date'
-          value={fromDate ?? ''}
-          onChange={(e) => onFromDateChange(e.target.value)}
-          className='w-full border rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500'
-        />
-      </div>
+        {/* From */}
+        <div className="min-w-[160px]">
+          <label className="block text-[11px] font-medium text-white/60 mb-1">From</label>
+          <input
+            type="date"
+            value={fromDate ?? ''}
+            onChange={(e) => onFromDateChange(e.target.value || undefined)}
+            className="w-full h-9 px-2 rounded-md bg-black/40 text-white
+                       border border-white/15 focus:outline-none
+                       focus:ring-1 focus:ring-sky-400"
+          />
+        </div>
 
-      {/* 📅 Date range: To */}
-      <div className='min-w-[160px]'>
-        <label
-          htmlFor='tb-to'
-          className='block text-sm font-medium text-gray-700 mb-1'
-        >
-          To
-        </label>
-        <input
-          id='tb-to'
-          type='date'
-          value={toDate ?? ''}
-          onChange={(e) => onToDateChange(e.target.value)}
-          className='w-full border rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500'
-        />
-      </div>
+        {/* To */}
+        <div className="min-w-[160px]">
+          <label className="block text-[11px] font-medium text-white/60 mb-1">To</label>
+          <input
+            type="date"
+            value={toDate ?? ''}
+            onChange={(e) => onToDateChange(e.target.value || undefined)}
+            className="w-full h-9 px-2 rounded-md bg-black/40 text-white
+                       border border-white/15 focus:outline-none
+                       focus:ring-1 focus:ring-sky-400"
+          />
+        </div>
 
-      {/* 📉 Minimum group size */}
-      <div className='min-w-[140px]'>
-        <label
-          htmlFor='tb-minsize'
-          className='block text-sm font-medium text-gray-700 mb-1'
-        >
-          Min group size
-        </label>
-        <input
-          id='tb-minsize'
-          type='number'
-          min={1}
-          value={Number.isFinite(minSize) ? minSize : 1}
-          onChange={(e) =>
-            onMinSizeChange(Math.max(1, Number(e.target.value || 1)))
-          }
-          className='w-full border rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500'
-        />
-      </div>
+        {/* Min group size */}
+        <div className="min-w-[120px]">
+          <label className="block text-[11px] font-medium text-white/60 mb-1">Min group size</label>
+          <input
+            type="number"
+            value={minSize}
+            onChange={(e) => onMinSizeChange(Number(e.target.value || 0))}
+            className="w-full h-9 px-2 rounded-md bg-black/40 text-white
+                       border border-white/15 focus:outline-none
+                       focus:ring-1 focus:ring-sky-400"
+          />
+        </div>
 
-      {/* 🔀 Mode toggle */}
-      <div className='min-w-[220px]'>
-        <span className='block text-sm font-medium text-gray-700 mb-1'>
-          Group by
-        </span>
-        <div className='inline-flex rounded-md overflow-hidden border'>
-          <button
-            type='button'
-            aria-pressed={mode === 'company'}
-            onClick={() => onModeChange('company')}
-            className={`px-3 py-2 text-sm ${mode === 'company' ? 'bg-blue-600 text-white' : 'bg-white hover:bg-gray-50'}`}
-          >
-            Company
-          </button>
-          <button
-            type='button'
-            aria-pressed={mode === 'title'}
-            onClick={() => onModeChange('title')}
-            className={`px-3 py-2 text-sm border-l ${mode === 'title' ? 'bg-blue-600 text-white' : 'bg-white hover:bg-gray-50'}`}
-          >
-            Title
-          </button>
+        {/* Group by (mode) */}
+        <div className="min-w-[180px]">
+          <label className="block text-[11px] font-medium text-white/60 mb-1">Group by</label>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className={
+                'px-3 h-9 rounded-md text-sm font-medium border ' +
+                (mode === 'company'
+                  ? 'bg-sky-600 text-white border-sky-500'
+                  : 'bg-black/40 text-white/75 hover:text-white border-white/15')
+              }
+              onClick={() => onModeChange('company')}
+            >
+              Company
+            </button>
+            <button
+              type="button"
+              className={
+                'px-3 h-9 rounded-md text-sm font-medium border ' +
+                (mode === 'title'
+                  ? 'bg-sky-600 text-white border-sky-500'
+                  : 'bg-black/40 text-white/75 hover:text-white border-white/15')
+              }
+              onClick={() => onModeChange('title')}
+            >
+              Title
+            </button>
+          </div>
         </div>
       </div>
     </div>

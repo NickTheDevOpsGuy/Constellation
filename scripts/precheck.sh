@@ -94,6 +94,14 @@ else
   echo -e "✅ No changes to commit.\n"
 fi
 
+# 5. ESLint check & fix
+echo "🧹 Running ts check..."
+if ! npx tsc --noEmit --pretty false; then
+  echo -e "❌ tsc errors found that could not be auto-fixed. Aborting push.\n"
+  exit 1
+fi
+echo -e "✅ ESLint passed.\n"
+
 echo -e "🚀 All checks passed. Ready to push!\n"
 
 

@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useMemo, useRef, useEffect } from 'react';
-import ForceGraph2D from 'react-force-graph-2d';
+import ForceGraph2D, { ForceGraphMethods, NodeObject, LinkObject } from 'react-force-graph-2d';
 import type { GraphData, PersonNode, PostNode } from '../types/linkedin';
-import { schemeTableau10 } from 'd3-scale-chromatic';
 
 export type GraphDimension = '2d' | '3d';
 type LabelMode = 'zoom' | 'always' | 'none';
@@ -12,7 +11,7 @@ type Props = {
   data: GraphData; // { nodes, edges }
   groupBy: 'company' | 'title' | 'communityId';
   labelMode?: LabelMode;
-  dimension?: GraphDimension;
+  dimension?: GraphDimension; // API symmetry; we render 2D here
   className?: string;
 };
 
@@ -31,32 +30,42 @@ type ForceLink = {
 };
 type ForceGraphData = { nodes: ForceNode[]; links: ForceLink[] };
 
-// minimal surface the FG ref exposes that we use
-interface FGInstance {
-  graphData: (d: ForceGraphData) => FGInstance | void;
-  d3ReheatSimulation?: () => void;
-  zoomToFit?: (ms?: number, px?: number) => void;
-}
+/** Vivid palette for dark backgrounds. */
+const DARK_PALETTE = [
+  '#64D2FF',
+  '#FF6B6B',
+  '#FFD166',
+  '#06D6A0',
+  '#A29BFE',
+  '#F72585',
+  '#4CC9F0',
+  '#43AA8B',
+  '#F8961E',
+  '#E76F51',
+];
 
-const PALETTE = schemeTableau10 as string[];
-
-// Edge type → color
+/** Edge colors tuned for dark canvas */
 const EDGE_COLOR: Record<string, string> = {
-  connection: '#bcbcbc',
-  co_company: '#ff5a9e',
-  co_title: '#29d0cf',
-  authored: '#6fa8ff',
-  commented: '#ffa45e',
-  liked: '#b879ff',
-  reacted: '#b879ff',
-  invited: '#ff6b6b',
-  messaged: '#7ce7ff',
+  connection: '#C9CED6',
+  co_company: '#FF5AA0',
+  co_title: '#29D0CF',
+  authored: '#6FA8FF',
+  commented: '#FFA45E',
+  liked: '#B879FF',
+  reacted: '#B879FF',
+  invited: '#FF6B6B',
+  messaged: '#7CE7FF',
 };
 
 function isPerson(n: PersonNode | PostNode): n is PersonNode {
   return (n as PersonNode).kind === 'person';
 }
 
+function hashStr(s: string) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
 function nodeFill(n: PersonNode | PostNode, groupBy: Props['groupBy']) {
   if (!isPerson(n)) return '#bdbdbd';
   const key =
@@ -64,20 +73,38 @@ function nodeFill(n: PersonNode | PostNode, groupBy: Props['groupBy']) {
       ? String((n as unknown as { communityId?: number }).communityId ?? '')
       : String(n[groupBy] ?? '');
   if (!key) return '#9aa0a6';
-  let h = 0;
-  for (let i = 0; i < key.length; i++)
-    h = ((h << 5) - h + key.charCodeAt(i)) | 0;
-  return PALETTE[Math.abs(h) % PALETTE.length];
+  return DARK_PALETTE[hashStr(key) % DARK_PALETTE.length];
+}
+
+/** Human labels for tooltips */
+function personTooltip(p: PersonNode) {
+  const name = [p.firstName, p.lastName].filter(Boolean).join(' ') || 'Person';
+  const co = p.company || '—';
+  const ti = p.title || '—';
+  return `${name}\n${co}${ti ? ` — ${ti}` : ''}`;
+}
+function linkTooltip(l: ForceLink) {
+  const type = l.type ?? 'connection';
+  const nice =
+    type === 'co_company'
+      ? 'Same Company'
+      : type === 'co_title'
+        ? 'Same Title'
+        : type.charAt(0).toUpperCase() + type.slice(1);
+  const w = l.weight ? ` (w=${l.weight})` : '';
+  return `${nice}${w}`;
 }
 
 export default function GraphCanvas({
   data,
   groupBy,
   labelMode = 'zoom',
-  dimension: _dimension = '2d', // keep prop for API, mark unused
+  dimension: _dimension = '2d',
   className,
 }: Props) {
-  const fgRef = useRef<FGInstance | null>(null);
+  const fgRef = useRef<
+    ForceGraphMethods<NodeObject<ForceNode>, LinkObject<ForceNode, ForceLink>> | undefined
+  >(undefined);
 
   // Build graph data (typed) and degree
   const graphData: ForceGraphData = useMemo(() => {
@@ -105,77 +132,94 @@ export default function GraphCanvas({
   // Fit to view on major changes
   useEffect(() => {
     const inst = fgRef.current;
-    if (inst?.zoomToFit) setTimeout(() => inst.zoomToFit?.(300, 40), 0);
+    if (inst?.zoomToFit) setTimeout(() => inst.zoomToFit(300, 40), 0);
     inst?.d3ReheatSimulation?.();
   }, [graphData.nodes.length, graphData.links.length]);
 
   const nodeLabel = (n: ForceNode): string => {
     if (labelMode === 'none') return '';
-    if (isPerson(n as PersonNode | PostNode)) {
-      const p = n as PersonNode;
-      const name = [p.firstName, p.lastName].filter(Boolean).join(' ');
-      return name || '';
-    }
-    return ((n as unknown as PostNode).title ?? 'post') as string;
+    if (isPerson(n as PersonNode | PostNode)) return personTooltip(n as PersonNode);
+    return 'Post';
   };
 
-  const drawNode = (
-    node: ForceNode,
-    ctx: CanvasRenderingContext2D,
-    scale: number
-  ) => {
+  const drawNode = (node: ForceNode, ctx: CanvasRenderingContext2D, scale: number) => {
     const degree = node.degree ?? 0;
     const baseR = 3 + Math.sqrt(degree) * 0.9;
     const r = Math.max(4, Math.min(14, baseR));
+    const color = nodeFill(node as PersonNode | PostNode, groupBy);
 
-    // Glow
+    // Soft outer glow
     ctx.save();
-    ctx.shadowColor = nodeFill(node as PersonNode | PostNode, groupBy);
+    ctx.shadowColor = color;
     ctx.shadowBlur = 18;
     ctx.beginPath();
-    ctx.fillStyle = nodeFill(node as PersonNode | PostNode, groupBy);
+    ctx.fillStyle = color;
     ctx.arc(node.x ?? 0, node.y ?? 0, r, 0, 2 * Math.PI);
     ctx.fill();
     ctx.restore();
 
-    // Inner ring for high-degree
-    if (degree >= 12) {
-      ctx.beginPath();
-      ctx.lineWidth = Math.max(1, 2.5 - Math.min(1.5, scale / 4));
-      ctx.strokeStyle = 'rgba(255,255,255,0.9)';
-      ctx.arc(node.x ?? 0, node.y ?? 0, r + 1.5, 0, 2 * Math.PI);
-      ctx.stroke();
-    }
+    // Halo for contrast
+    ctx.beginPath();
+    ctx.lineWidth = 1.25;
+    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+    ctx.arc(node.x ?? 0, node.y ?? 0, r + 1.25, 0, 2 * Math.PI);
+    ctx.stroke();
 
     // Label
-    const show =
-      labelMode === 'always' ||
-      (labelMode === 'zoom' && scale > 1.4) ||
-      degree >= 10;
+    const show = labelMode === 'always' || (labelMode === 'zoom' && scale > 1.4) || degree >= 10;
     if (show) {
-      const label = nodeLabel(node);
-      if (label) {
+      const text = isPerson(node as PersonNode | PostNode)
+        ? [(node as PersonNode).firstName, (node as PersonNode).lastName].filter(Boolean).join(' ')
+        : 'Post';
+      if (text) {
         ctx.font = `${Math.max(8, 14 / (scale * 0.9))}px ui-sans-serif, system-ui, -apple-system`;
         ctx.textBaseline = 'middle';
         ctx.lineWidth = 4;
         ctx.strokeStyle = 'rgba(0,0,0,0.55)';
-        ctx.strokeText(label, (node.x ?? 0) + r + 6, node.y ?? 0);
-        ctx.fillStyle = 'rgba(255,255,255,0.95)';
-        ctx.fillText(label, (node.x ?? 0) + r + 6, node.y ?? 0);
+        ctx.strokeText(text, (node.x ?? 0) + r + 6, node.y ?? 0);
+        ctx.fillStyle = 'rgba(255,255,255,0.96)';
+        ctx.fillText(text, (node.x ?? 0) + r + 6, node.y ?? 0);
       }
     }
   };
 
-  const linkColor = (l: ForceLink) =>
-    `${EDGE_COLOR[l.type ?? ''] ?? '#7a7a7a'}88`;
+  // Brighter, thicker links so they are clearly visible
+  const linkColor = (l: ForceLink) => EDGE_COLOR[l.type ?? 'connection'] ?? '#C9CED6';
   const linkWidth = (l: ForceLink) =>
-    Math.min(2.2, 0.6 + Math.log2((l.weight ?? 1) + 1));
+    Math.max(1.2, Math.min(2.8, 0.8 + Math.log2((l.weight ?? 1) + 1)));
   const linkCurvature = () => 0.15;
+
+  // Subtle glow underneath link to improve contrast on dark bg
+  const linkCanvasObject = (
+    link: LinkObject<ForceNode, ForceLink>,
+    ctx: CanvasRenderingContext2D,
+  ) => {
+    const l = link as unknown as ForceLink;
+    const c = linkColor(l);
+    const from = link.source as unknown as ForceNode;
+    const to = link.target as unknown as ForceNode;
+    if (!from || !to || from.x == null || from.y == null || to.x == null || to.y == null) return;
+
+    ctx.save();
+    ctx.strokeStyle = c;
+    ctx.lineWidth = linkWidth(l) + 1;
+    ctx.globalAlpha = 0.15;
+    ctx.beginPath();
+    ctx.moveTo(from.x, from.y);
+    ctx.quadraticCurveTo(
+      (from.x + to.x) / 2 + 0.15 * (to.y - from.y),
+      (from.y + to.y) / 2 + 0.15 * (from.x - to.x),
+      to.x,
+      to.y,
+    );
+    ctx.stroke();
+    ctx.restore();
+  };
 
   return (
     <div
       className={className ?? ''}
-      data-dimension={_dimension} // <-- uses the prop (silences no-unused-vars)
+      data-dimension={_dimension}
       style={{
         height: '100%',
         background:
@@ -186,17 +230,43 @@ export default function GraphCanvas({
       }}
     >
       <ForceGraph2D
-        ref={fgRef as React.MutableRefObject<FGInstance>}
-        nodeId='id'
-        graphData={graphData}
-        nodeCanvasObject={drawNode}
-        linkColor={linkColor}
-        linkWidth={linkWidth}
-        linkCurvature={linkCurvature}
-        linkDirectionalParticles={(l: ForceLink) =>
-          l.type === 'connection' ? 0 : 1
+        ref={
+          fgRef as React.MutableRefObject<
+            ForceGraphMethods<NodeObject<ForceNode>, LinkObject<ForceNode, ForceLink>> | undefined
+          >
+        }
+        nodeId="id"
+        graphData={
+          graphData as unknown as {
+            nodes: NodeObject<ForceNode>[];
+            links: LinkObject<ForceNode, ForceLink>[];
+          }
+        }
+        // TOOLTIP TEXTS
+        nodeLabel={nodeLabel as unknown as (n: NodeObject<ForceNode>) => string}
+        linkLabel={(l: LinkObject<ForceNode, ForceLink>) => linkTooltip(l as unknown as ForceLink)}
+        // NODE RENDER
+        nodeCanvasObject={
+          drawNode as unknown as (
+            node: NodeObject<ForceNode>,
+            ctx: CanvasRenderingContext2D,
+            globalScale: number,
+          ) => void
+        }
+        // LINK RENDER + STYLING
+        linkColor={linkColor as unknown as (link: LinkObject<ForceNode, ForceLink>) => string}
+        linkWidth={linkWidth as unknown as (link: LinkObject<ForceNode, ForceLink>) => number}
+        linkCurvature={
+          linkCurvature as unknown as (link: LinkObject<ForceNode, ForceLink>) => number
+        }
+        linkCanvasObject={linkCanvasObject}
+        linkDirectionalParticles={(l: LinkObject<ForceNode, ForceLink>) =>
+          (l as unknown as ForceLink).type === 'connection' ? 0 : 2
         }
         linkDirectionalParticleWidth={1.2}
+        linkDirectionalArrowLength={3.5}
+        linkDirectionalArrowRelPos={0.6}
+        // PHYSICS
         cooldownTicks={150}
         d3VelocityDecay={0.35}
         onEngineStop={() => fgRef.current?.zoomToFit?.(300, 40)}

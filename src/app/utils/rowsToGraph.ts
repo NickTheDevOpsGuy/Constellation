@@ -36,7 +36,7 @@ export function rowsToGraph(
       type: LinkEdge['type'];
       date?: string;
     }[];
-  } = {}
+  } = {},
 ): GraphData {
   const infer: InferMode = opts.infer ?? 'both';
   const posts = opts.posts ?? [];
@@ -74,8 +74,8 @@ export function rowsToGraph(
       edges.push(
         ...star(
           val.map((n) => n.id),
-          'co_company'
-        )
+          'co_company',
+        ),
       );
   }
   if (infer === 'both' || infer === 'title') {
@@ -84,8 +84,8 @@ export function rowsToGraph(
       edges.push(
         ...star(
           val.map((n) => n.id),
-          'co_title'
-        )
+          'co_title',
+        ),
       );
   }
 
