@@ -3,17 +3,20 @@
 import React from 'react';
 import { useTheme } from '../hooks/useTheme';
 
-<div className="p-2 rounded border bg-white dark:bg-black text-black dark:text-white">
+<div className='p-2 rounded border bg-white dark:bg-black text-black dark:text-white'>
   Dark probe: this box should flip black/white when you toggle.
-</div>
+</div>;
 
 const order: Array<'system' | 'light' | 'dark'> = ['system', 'light', 'dark'];
 
 function labelFor(t: 'system' | 'light' | 'dark') {
   switch (t) {
-    case 'dark': return '🌙 Dark';
-    case 'light': return '☀️ Light';
-    default: return '💻 System';
+    case 'dark':
+      return '🌙 Dark';
+    case 'light':
+      return '☀️ Light';
+    default:
+      return '💻 System';
   }
 }
 
@@ -33,13 +36,12 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={cycle}
-      className="px-3 py-2 rounded-xl text-sm border border-slate-300 dark:border-slate-700
-                 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800"
-      title="Toggle theme (system → light → dark)"
-      aria-label="Toggle theme"
+      className='px-3 py-2 rounded-xl text-sm border border-slate-300 dark:border-slate-700
+                 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800'
+      title='Toggle theme (system → light → dark)'
+      aria-label='Toggle theme'
     >
       {labelFor(theme as any)}
     </button>
-    
   );
 }
