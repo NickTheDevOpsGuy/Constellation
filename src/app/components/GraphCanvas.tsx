@@ -1,13 +1,21 @@
 // src/app/components/GraphCanvas.tsx
 'use client';
 
-import React, { useEffect, useMemo, useRef, useCallback, useState } from 'react';
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useCallback,
+  useState,
+} from 'react';
 import ForceGraph2D, {
   type NodeObject as RFBaseNode,
   type LinkObject as RFBaseLink,
   type ForceGraphMethods as FG2DMethods,
 } from 'react-force-graph-2d';
-import ForceGraph3D, { type ForceGraphMethods as FG3DMethods } from 'react-force-graph-3d';
+import ForceGraph3D, {
+  type ForceGraphMethods as FG3DMethods,
+} from 'react-force-graph-3d';
 import { schemeTableau10 } from 'd3-scale-chromatic';
 import type { GraphData, PersonNode } from '../types/linkedin';
 
@@ -103,12 +111,18 @@ type RFNode = RFBaseNode &
   };
 
 /** Link type used by react-force-graph */
-type RFLink = RFBaseLink<RFNode, { type?: string; kind?: string; date?: string; weight?: number }> &
+type RFLink = RFBaseLink<
+  RFNode,
+  { type?: string; kind?: string; date?: string; weight?: number }
+> &
   LinkEdge;
 
 /** The exact ref type both 2D and 3D components expect */
 type FGRefType = React.MutableRefObject<
-  | import('react-force-graph-2d').ForceGraphMethods<RFBaseNode<RFNode>, RFBaseLink<RFNode, RFLink>>
+  | import('react-force-graph-2d').ForceGraphMethods<
+      RFBaseNode<RFNode>,
+      RFBaseLink<RFNode, RFLink>
+    >
   | undefined
 >;
 
@@ -249,8 +263,11 @@ const GraphCanvas: React.FC<Props> = ({
     link?.distance?.(30);
     link?.strength?.(0.25);
 
-    const decay = (fgInteropRef.current as unknown as { d3VelocityDecay?: (v: number) => void })
-      ?.d3VelocityDecay;
+    const decay = (
+      fgInteropRef.current as unknown as {
+        d3VelocityDecay?: (v: number) => void;
+      }
+    )?.d3VelocityDecay;
     decay?.(0.4);
   }, [graph]);
 
@@ -309,7 +326,7 @@ const GraphCanvas: React.FC<Props> = ({
       ctx.fillText(label, node.x + r + pad, node.y);
       ctx.restore();
     },
-    [labelMode, groupBy],
+    [labelMode, groupBy]
   );
 
   /** Pointer area for precise hovers */
@@ -321,7 +338,7 @@ const GraphCanvas: React.FC<Props> = ({
       ctx.arc(node.x, node.y, 10, 0, 2 * Math.PI);
       ctx.fill();
     },
-    [],
+    []
   );
 
   /** Mouse for tooltip positioning */
@@ -343,18 +360,23 @@ const GraphCanvas: React.FC<Props> = ({
   };
 
   return (
-    <div ref={wrapRef} onMouseMove={onMouseMove} className={`relative w-full h-full ${className}`}>
-      <div className="absolute inset-0 border rounded overflow-hidden">
+    <div
+      ref={wrapRef}
+      onMouseMove={onMouseMove}
+      className={`relative w-full h-full ${className}`}
+    >
+      <div className='absolute inset-0 border rounded overflow-hidden'>
         {want3D ? (
           <ForceGraph3D<RFNode, RFLink>
-            key="fg3d"
+            key='fg3d'
             ref={
               fgInteropRef as unknown as React.MutableRefObject<
-                FG3DMethods<RFBaseNode<RFNode>, RFBaseLink<RFNode, RFLink>> | undefined
+                | FG3DMethods<RFBaseNode<RFNode>, RFBaseLink<RFNode, RFLink>>
+                | undefined
               >
             }
             graphData={graph}
-            backgroundColor="#ffffff"
+            backgroundColor='#ffffff'
             {...(groupBy === 'communityId'
               ? {
                   nodeAutoColorBy: undefined as never,
@@ -366,7 +388,9 @@ const GraphCanvas: React.FC<Props> = ({
             linkOpacity={0.9}
             linkWidth={1.5}
             warmupTicks={120}
-            onEngineStop={() => setTimeout(() => fgCommonRef.current?.zoomToFit?.(500, 120), 600)}
+            onEngineStop={() =>
+              setTimeout(() => fgCommonRef.current?.zoomToFit?.(500, 120), 600)
+            }
             onNodeClick={(node) => {
               if (isPersonNode(node)) openNodeUrl(node);
             }}
@@ -382,10 +406,10 @@ const GraphCanvas: React.FC<Props> = ({
           />
         ) : (
           <ForceGraph2D<RFNode, RFLink>
-            key="fg2d"
+            key='fg2d'
             ref={fgInteropRef}
             graphData={graph}
-            backgroundColor="#ffffff"
+            backgroundColor='#ffffff'
             nodeRelSize={6}
             {...(groupBy === 'communityId'
               ? { nodeAutoColorBy: undefined as never }
@@ -412,10 +436,15 @@ const GraphCanvas: React.FC<Props> = ({
                 }) ?? undefined;
               const canvas = canvasGetter?.canvas?.();
               if (canvas) {
-                const hasUrl = !!(node && isPersonNode(node) && getNodeUrl(node));
+                const hasUrl = !!(
+                  node &&
+                  isPersonNode(node) &&
+                  getNodeUrl(node)
+                );
                 canvas.style.cursor = hasUrl ? 'pointer' : 'default';
               }
-              fgCommonRef.current = (fgInteropRef.current as unknown as FGCommon) ?? null;
+              fgCommonRef.current =
+                (fgInteropRef.current as unknown as FGCommon) ?? null;
             }}
             onLinkHover={(link) => {
               setHoverLink(link ?? null);
@@ -434,7 +463,7 @@ const GraphCanvas: React.FC<Props> = ({
       </div>
 
       {dimension === '3d' && !glOk && (
-        <div className="absolute right-3 top-3 z-10 rounded-md bg-amber-100 text-amber-900 text-xs px-2 py-1 shadow">
+        <div className='absolute right-3 top-3 z-10 rounded-md bg-amber-100 text-amber-900 text-xs px-2 py-1 shadow'>
           WebGL not available — showing 2D
         </div>
       )}
@@ -442,47 +471,58 @@ const GraphCanvas: React.FC<Props> = ({
       {/* Node tooltip (priority over link tooltip) */}
       {hoverNode ? (
         <div
-          className="pointer-events-none absolute z-10 max-w-xs rounded-md border bg-white/95 shadow-lg text-xs p-2
-                     dark:bg-gray-900/95 dark:text-gray-100 dark:border-gray-700"
+          className='pointer-events-none absolute z-10 max-w-xs rounded-md border bg-white/95 shadow-lg text-xs p-2
+                     dark:bg-gray-900/95 dark:text-gray-100 dark:border-gray-700'
           style={{
-            left: Math.min(mouse.x + 14, (wrapRef.current?.clientWidth ?? 0) - 220),
-            top: Math.min(mouse.y + 14, (wrapRef.current?.clientHeight ?? 0) - 140),
+            left: Math.min(
+              mouse.x + 14,
+              (wrapRef.current?.clientWidth ?? 0) - 220
+            ),
+            top: Math.min(
+              mouse.y + 14,
+              (wrapRef.current?.clientHeight ?? 0) - 140
+            ),
           }}
-          role="tooltip"
+          role='tooltip'
         >
-          <div className="font-semibold">
+          <div className='font-semibold'>
             {hoverNode.name ||
-              [hoverNode.firstName, hoverNode.lastName].filter(Boolean).join(' ') ||
+              [hoverNode.firstName, hoverNode.lastName]
+                .filter(Boolean)
+                .join(' ') ||
               hoverNode.company ||
               hoverNode.id}
           </div>
           {(hoverNode.company || hoverNode.title) && (
-            <div className="mt-0.5 text-gray-600 dark:text-gray-300">
+            <div className='mt-0.5 text-gray-600 dark:text-gray-300'>
               {hoverNode.company && <span>{hoverNode.company}</span>}
               {hoverNode.company && hoverNode.title && <span> • </span>}
               {hoverNode.title && <span>{hoverNode.title}</span>}
             </div>
           )}
           {hoverNode.connectedOn && (
-            <div className="mt-0.5 text-gray-500 dark:text-gray-400">
+            <div className='mt-0.5 text-gray-500 dark:text-gray-400'>
               Connected: {hoverNode.connectedOn}
             </div>
           )}
           {Number.isFinite(hoverNode.degree) && (hoverNode.degree ?? 0) > 0 && (
-            <div className="mt-0.5 text-gray-500 dark:text-gray-400">
+            <div className='mt-0.5 text-gray-500 dark:text-gray-400'>
               Degree: {hoverNode.degree}
             </div>
           )}
           {typeof hoverNode.communityId === 'number' && (
-            <div className="mt-0.5 text-gray-500 dark:text-gray-400">
+            <div className='mt-0.5 text-gray-500 dark:text-gray-400'>
               Community: {hoverNode.communityId}
             </div>
           )}
           {getNodeUrl(hoverNode) && (
-            <div className="mt-1">
-              <span className="opacity-70">Profile:</span>{' '}
-              <span className="underline opacity-90">
-                {String(getNodeUrl(hoverNode)).replace(/^https?:\/\/(www\.)?/, '')}
+            <div className='mt-1'>
+              <span className='opacity-70'>Profile:</span>{' '}
+              <span className='underline opacity-90'>
+                {String(getNodeUrl(hoverNode)).replace(
+                  /^https?:\/\/(www\.)?/,
+                  ''
+                )}
               </span>
             </div>
           )}
@@ -492,24 +532,31 @@ const GraphCanvas: React.FC<Props> = ({
       {/* Link tooltip (friendly labels) — only when no node is hovered */}
       {!hoverNode && hoverLink ? (
         <div
-          className="pointer-events-none absolute z-10 max-w-xs rounded-md border bg-white/95 shadow-lg text-xs p-2
-                     dark:bg-gray-900/95 dark:text-gray-100 dark:border-gray-700"
+          className='pointer-events-none absolute z-10 max-w-xs rounded-md border bg-white/95 shadow-lg text-xs p-2
+                     dark:bg-gray-900/95 dark:text-gray-100 dark:border-gray-700'
           style={{
-            left: Math.min(mouse.x + 14, (wrapRef.current?.clientWidth ?? 0) - 220),
-            top: Math.min(mouse.y + 14, (wrapRef.current?.clientHeight ?? 0) - 90),
+            left: Math.min(
+              mouse.x + 14,
+              (wrapRef.current?.clientWidth ?? 0) - 220
+            ),
+            top: Math.min(
+              mouse.y + 14,
+              (wrapRef.current?.clientHeight ?? 0) - 90
+            ),
           }}
-          role="tooltip"
+          role='tooltip'
         >
-          <div className="font-semibold">{linkFriendly(hoverLink)}</div>
+          <div className='font-semibold'>{linkFriendly(hoverLink)}</div>
           {(hoverLink.date || hoverLink.weight) && (
-            <div className="mt-0.5 text-gray-500 dark:text-gray-400">
+            <div className='mt-0.5 text-gray-500 dark:text-gray-400'>
               {hoverLink.date && <span>When: {hoverLink.date}</span>}
               {hoverLink.date && hoverLink.weight && <span> • </span>}
               {hoverLink.weight && <span>Weight: {hoverLink.weight}</span>}
             </div>
           )}
-          <div className="mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">
-            Edge color: {EDGE_COLOR(hoverLink.type || hoverLink.kind || 'connection')}
+          <div className='mt-0.5 text-[11px] text-gray-500 dark:text-gray-400'>
+            Edge color:{' '}
+            {EDGE_COLOR(hoverLink.type || hoverLink.kind || 'connection')}
           </div>
         </div>
       ) : null}
