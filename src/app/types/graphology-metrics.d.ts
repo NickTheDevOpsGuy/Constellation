@@ -6,7 +6,10 @@ declare module 'graphology-metrics/graph/modularity' {
     getNodeCommunity: (node: string) => number;
     getEdgeWeight?: (edge: string, attr: Record<string, unknown>) => number;
   }
-  export default function modularity(graph: Graph, options: ModularityOptions): number;
+  export default function modularity(
+    graph: Graph,
+    options: ModularityOptions
+  ): number;
 }
 
 declare module 'graphology-communities-louvain' {
@@ -15,7 +18,10 @@ declare module 'graphology-communities-louvain' {
     getEdgeWeight?: (edge: string, attr: Record<string, unknown>) => number;
     // plus other optional fields the lib supports; we only use weight getter
   }
-  function louvain(graph: Graph, options?: LouvainOptions): Record<string, number>;
+  function louvain(
+    graph: Graph,
+    options?: LouvainOptions
+  ): Record<string, number>;
   namespace louvain {
     const detection: typeof louvain; // some builds expose .detection
   }
