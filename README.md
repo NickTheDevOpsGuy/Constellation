@@ -15,17 +15,13 @@ _Visualize your LinkedIn network like a constellation — built with React, Type
 ## 🚀 What’s Next
 
 <!-- START:NEXT_STEPS -->
-
 _Nothing cooking right now 💤_
-
 <!-- END:NEXT_STEPS -->
 
 ## 🏆 Achievements Lately
 
 <!-- START:ACHIEVEMENTS -->
-
 _No wins logged yet 🎯_
-
 <!-- END:ACHIEVEMENTS -->
 
 ---
@@ -144,6 +140,7 @@ Clone the repo and install dependencies:
 
 ```plaintext
 .
+├── eslint.config.js
 ├── .github
 │   ├── ISSUE_TEMPLATE
 │   │   ├── bug_report.md
@@ -155,9 +152,9 @@ Clone the repo and install dependencies:
 ├── .gitignore
 ├── .husky
 │   ├── _
-│   │   ├── .gitignore
 │   │   ├── applypatch-msg
 │   │   ├── commit-msg
+│   │   ├── .gitignore
 │   │   ├── h
 │   │   ├── husky.sh
 │   │   ├── post-applypatch
@@ -169,18 +166,17 @@ Clone the repo and install dependencies:
 │   │   ├── pre-auto-gc
 │   │   ├── pre-commit
 │   │   ├── pre-merge-commit
+│   │   ├── prepare-commit-msg
 │   │   ├── pre-push
-│   │   ├── pre-rebase
-│   │   └── prepare-commit-msg
+│   │   └── pre-rebase
 │   ├── pre-commit
 │   └── pre-push
+├── index.html
+├── package.json
+├── package-lock.json
 ├── .prettierignore
 ├── .prettierrc.json
 ├── .prettierrc.yml
-├── eslint.config.js
-├── index.html
-├── package-lock.json
-├── package.json
 ├── README.md
 ├── Screenshots
 │   ├── graph.png
@@ -214,7 +210,7 @@ Clone the repo and install dependencies:
 │   │   ├── styles
 │   │   │   └── global.css
 │   │   ├── types
-│   │   │   ├── graphology-metrics.d.ts:
+│   │   │   ├── graphology-metrics.d.ts
 │   │   │   └── linkedin.ts
 │   │   └── utils
 │   │       ├── edgeBuilders.ts
@@ -229,8 +225,10 @@ Clone the repo and install dependencies:
 │   │       ├── rowsToGraph.ts
 │   │       ├── summarize.ts
 │   │       └── time.ts
-│   └── public
-│       └── constellation.svg
+│   ├── public
+│   │   └── constellation.svg
+│   └── types
+│       └── third-party.d.ts
 ├── tailwind.config.ts
 ├── tsconfig.app.json
 ├── tsconfig.json

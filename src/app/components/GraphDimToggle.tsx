@@ -1,3 +1,4 @@
+// src/app/pages/components/GraphDimToggle.tsx
 'use client';
 
 import { useEffect, useState } from 'react';

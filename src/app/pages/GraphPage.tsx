@@ -1,3 +1,4 @@
+// src/app/pages/GraphPage.tsx
 'use client';
 
 import React, { useMemo, useState, useEffect } from 'react';
@@ -287,7 +288,7 @@ export default function GraphPage() {
     colorMode === 'community' ? 'communityId' : (mode as 'company' | 'title');
 
   if (raw.length === 0) {
-    return <div className='text-gray-600'>No data yet. Import a CSV.</div>;
+    return <div className='text-slate-400'>No data yet. Import a CSV.</div>;
   }
 
   // Facet VMs
@@ -329,14 +330,10 @@ export default function GraphPage() {
     <div
       className='w-full grid gap-3'
       style={{
-        height: 'calc(100vh - 140px)',
+        // taller to avoid clipping under sticky header
+        height: 'max(720px, calc(100vh - 170px))',
         gridTemplateRows: 'auto auto auto minmax(420px,1fr) auto',
         gridTemplateColumns: '280px 1fr',
-        background:
-          'radial-gradient(1200px 700px at 50% -20%, rgba(64,174,255,0.18), rgba(0,0,0,0)), ' +
-          'radial-gradient(1000px 600px at 80% 20%, rgba(255,86,170,0.14), rgba(0,0,0,0)), ' +
-          'radial-gradient(900px 600px at 15% 30%, rgba(64,255,220,0.12), rgba(0,0,0,0)), ' +
-          '#0b1220',
       }}
     >
       {/* toolbar */}
