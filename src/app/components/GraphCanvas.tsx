@@ -1,3 +1,4 @@
+// src/app/pages/components/GraphCanvas.tsx
 'use client';
 
 import React, { useMemo, useRef, useEffect } from 'react';

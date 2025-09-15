@@ -1,3 +1,4 @@
+// src/app/utils/summarize.ts
 import type { LinkedInRawRecord } from '../types/linkedin';
 
 export type Summary = {

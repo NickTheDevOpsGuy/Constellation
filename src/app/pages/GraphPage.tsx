@@ -1,3 +1,4 @@
+// src/app/pages/GraphPage.tsx
 'use client';
 
 import React, { useMemo, useState, useEffect } from 'react';
@@ -287,7 +288,7 @@ export default function GraphPage() {
     colorMode === 'community' ? 'communityId' : (mode as 'company' | 'title');
 
   if (raw.length === 0) {
-    return <div className='text-gray-600'>No data yet. Import a CSV.</div>;
+    return <div className="text-slate-400">No data yet. Import a CSV.</div>;
   }
 
   // Facet VMs
@@ -327,22 +328,18 @@ export default function GraphPage() {
 
   return (
     <div
-      className='w-full grid gap-3'
+      className="w-full grid gap-3"
       style={{
-        height: 'calc(100vh - 140px)',
+        // taller to avoid clipping under sticky header
+        height: 'max(720px, calc(100vh - 170px))',
         gridTemplateRows: 'auto auto auto minmax(420px,1fr) auto',
         gridTemplateColumns: '280px 1fr',
-        background:
-          'radial-gradient(1200px 700px at 50% -20%, rgba(64,174,255,0.18), rgba(0,0,0,0)), ' +
-          'radial-gradient(1000px 600px at 80% 20%, rgba(255,86,170,0.14), rgba(0,0,0,0)), ' +
-          'radial-gradient(900px 600px at 15% 30%, rgba(64,255,220,0.12), rgba(0,0,0,0)), ' +
-          '#0b1220',
       }}
     >
       {/* toolbar */}
       <div style={{ gridColumn: '1 / span 2' }}>
         <Toolbar
-          className='max-w-none'
+          className="max-w-none"
           filterText={filterText}
           onFilterTextChange={setFilterText}
           fromDate={fromDate}
@@ -360,10 +357,7 @@ export default function GraphPage() {
       </div>
 
       {/* timeline */}
-      <div
-        style={{ gridColumn: '1 / span 2' }}
-        className='px-1 -mt-2 flex items-center gap-3'
-      >
+      <div style={{ gridColumn: '1 / span 2' }} className="px-1 -mt-2 flex items-center gap-3">
         <Timeline
           dates={allDates}
           onChange={({ from, to }) => {
@@ -375,7 +369,7 @@ export default function GraphPage() {
       </div>
 
       {/* legend */}
-      <div style={{ gridColumn: '1 / span 2' }} className='px-1'>
+      <div style={{ gridColumn: '1 / span 2' }} className="px-1">
         <Legend
           items={legendItems}
           active={activeEdgeTypes}
@@ -388,15 +382,15 @@ export default function GraphPage() {
               return next;
             })
           }
-          className='mt-1'
+          className="mt-1"
           communityCounts={colorMode === 'community' ? counts : undefined}
-          communityTitle='Communities (node colors)'
+          communityTitle="Communities (node colors)"
         />
       </div>
 
       {/* facets */}
       <aside
-        className='rounded p-3 overflow-auto text-white'
+        className="rounded p-3 overflow-auto text-white"
         style={{
           background: 'rgba(10,15,28,0.6)',
           border: '1px solid rgba(255,255,255,0.08)',
@@ -414,47 +408,42 @@ export default function GraphPage() {
 
       {/* graph */}
       <main
-        className='rounded overflow-hidden'
+        className="rounded overflow-hidden"
         style={{
           minHeight: 420,
           background: 'transparent',
           border: '1px solid rgba(255,255,255,0.08)',
         }}
       >
-        <div
-          className='relative h-full'
-          style={{ height: 'var(--graph-height, 66vh)' }}
-        >
+        <div className="relative h-full" style={{ height: 'var(--graph-height, 66vh)' }}>
           <GraphCanvas
             data={graphForCanvas}
             groupBy={groupByForCanvas}
-            labelMode='zoom'
+            labelMode="zoom"
             dimension={dim}
           />
 
           <div
-            className='absolute right-3 top-3 z-10 flex items-center gap-2
+            className="absolute right-3 top-3 z-10 flex items-center gap-2
                        rounded-md border border-gray-300/20
-                       bg-black/40 text-white backdrop-blur px-2 py-1'
+                       bg-black/40 text-white backdrop-blur px-2 py-1"
           >
-            <label className='text-xs md:text-sm mr-1'>Color:</label>
+            <label className="text-xs md:text-sm mr-1">Color:</label>
             <select
-              className='appearance-none text-xs md:text-sm h-8 px-2 rounded-md
-                         bg-black/40 text-white border border-white/10'
+              className="appearance-none text-xs md:text-sm h-8 px-2 rounded-md
+                         bg-black/40 text-white border border-white/10"
               value={colorMode}
               onChange={(e) =>
-                setColorMode(
-                  e.target.value as 'company' | 'title' | 'community'
-                )
+                setColorMode(e.target.value as 'company' | 'title' | 'community')
               }
-              aria-label='Color nodes by'
+              aria-label="Color nodes by"
             >
-              <option value='company'>Company</option>
-              <option value='title'>Title</option>
-              <option value='community'>Community (Louvain)</option>
+              <option value="company">Company</option>
+              <option value="title">Title</option>
+              <option value="community">Community (Louvain)</option>
             </select>
 
-            <div className='ml-2'>
+            <div className="ml-2">
               <GraphDimToggle
                 value={dim}
                 onChange={(v) => {
@@ -472,40 +461,30 @@ export default function GraphPage() {
       </main>
 
       {/* table with tooltips */}
-      <section
-        style={{ gridColumn: '1 / span 2' }}
-        className='rounded p-3 overflow-auto'
-      >
-        <h4 className='text-sm font-semibold mb-2 text-white/90'>
-          Connections
-        </h4>
-        <table className='w-full text-sm border-collapse text-white/90'>
-          <thead className='border-b border-white/10 bg-white/5'>
+      <section style={{ gridColumn: '1 / span 2' }} className="rounded p-3 overflow-auto">
+        <h4 className="text-sm font-semibold mb-2 text-white/90">Connections</h4>
+        <table className="w-full text-sm border-collapse text-white/90">
+          <thead className="border-b border-white/10 bg-white/5">
             <tr>
-              <th className='px-2 py-1 text-left'>Name</th>
-              <th className='px-2 py-1 text-left'>Company</th>
-              <th className='px-2 py-1 text-left'>Title</th>
-              <th className='px-2 py-1 text-left'>ConnectedOn</th>
+              <th className="px-2 py-1 text-left">Name</th>
+              <th className="px-2 py-1 text-left">Company</th>
+              <th className="px-2 py-1 text-left">Title</th>
+              <th className="px-2 py-1 text-left">ConnectedOn</th>
             </tr>
           </thead>
           <tbody>
             {filteredRows.slice(0, 120).map((r, i) => {
-              const name =
-                [r.firstName, r.lastName].filter(Boolean).join(' ') || '—';
+              const name = [r.firstName, r.lastName].filter(Boolean).join(' ') || '—';
               const tip = `${name}\n${r.company ?? '—'}${r.title ? ` — ${r.title}` : ''}\n${r.connectedOn ?? ''}`;
               return (
-                <tr
-                  key={i}
-                  className='border-b border-white/5 last:border-0'
-                  title={tip}
-                >
-                  <td className='px-2 py-1' title={name}>
+                <tr key={i} className="border-b border-white/5 last:border-0" title={tip}>
+                  <td className="px-2 py-1" title={name}>
                     {r.url ? (
                       <a
                         href={r.url}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className='text-sky-300 hover:underline'
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sky-300 hover:underline"
                         title={tip}
                       >
                         {name}
@@ -514,13 +493,13 @@ export default function GraphPage() {
                       name
                     )}
                   </td>
-                  <td className='px-2 py-1' title={r.company ?? '—'}>
+                  <td className="px-2 py-1" title={r.company ?? '—'}>
                     {r.company ?? '—'}
                   </td>
-                  <td className='px-2 py-1' title={r.title ?? '—'}>
+                  <td className="px-2 py-1" title={r.title ?? '—'}>
                     {r.title ?? '—'}
                   </td>
-                  <td className='px-2 py-1' title={r.connectedOn ?? '—'}>
+                  <td className="px-2 py-1" title={r.connectedOn ?? '—'}>
                     {r.connectedOn ?? '—'}
                   </td>
                 </tr>

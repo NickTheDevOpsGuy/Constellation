@@ -1,3 +1,5 @@
+// src/app/pages/components/Facets.tsx
+
 'use client';
 
 import React from 'react';

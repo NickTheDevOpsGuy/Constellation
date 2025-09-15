@@ -1,3 +1,4 @@
+// src/app/types/cgrapholog-metrics-d.ts
 declare module 'graphology-metrics/community/modularity' {
   import { Graph } from 'graphology-types';
   function modularity(
