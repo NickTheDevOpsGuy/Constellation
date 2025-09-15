@@ -45,76 +45,68 @@ export default function Toolbar({
         (className ?? '')
       }
     >
-      <div className='grid gap-2 items-center md:grid-cols-[1fr_auto_auto_auto_auto]'>
+      <div className="grid gap-2 items-center md:grid-cols-[1fr_auto_auto_auto_auto]">
         {/* Search */}
-        <div className='w-full'>
-          <label className='block text-[11px] font-medium text-white/60 mb-1'>
+        <div className="w-full">
+          <label className="block text-[11px] font-medium text-white/60 mb-1">
             Search (company, title, or name)
           </label>
           <input
-            type='text'
+            type="text"
             value={filterText}
             onChange={(e) => onFilterTextChange(e.target.value)}
-            placeholder='e.g. Google, engineer...'
-            className='w-full h-9 px-3 rounded-md bg-black/40 text-white
+            placeholder="e.g. Google, engineer..."
+            className="w-full h-9 px-3 rounded-md bg-black/40 text-white
                        border border-white/15 placeholder-white/50
-                       focus:outline-none focus:ring-1 focus:ring-sky-400'
+                       focus:outline-none focus:ring-1 focus:ring-sky-400"
           />
         </div>
 
         {/* From */}
-        <div className='min-w-[160px]'>
-          <label className='block text-[11px] font-medium text-white/60 mb-1'>
-            From
-          </label>
+        <div className="min-w-[160px]">
+          <label className="block text-[11px] font-medium text-white/60 mb-1">From</label>
           <input
-            type='date'
+            type="date"
             value={fromDate ?? ''}
             onChange={(e) => onFromDateChange(e.target.value || undefined)}
-            className='w-full h-9 px-2 rounded-md bg-black/40 text-white
+            className="w-full h-9 px-2 rounded-md bg-black/40 text-white
                        border border-white/15 focus:outline-none
-                       focus:ring-1 focus:ring-sky-400'
+                       focus:ring-1 focus:ring-sky-400"
           />
         </div>
 
         {/* To */}
-        <div className='min-w-[160px]'>
-          <label className='block text-[11px] font-medium text-white/60 mb-1'>
-            To
-          </label>
+        <div className="min-w-[160px]">
+          <label className="block text-[11px] font-medium text-white/60 mb-1">To</label>
           <input
-            type='date'
+            type="date"
             value={toDate ?? ''}
             onChange={(e) => onToDateChange(e.target.value || undefined)}
-            className='w-full h-9 px-2 rounded-md bg-black/40 text-white
+            className="w-full h-9 px-2 rounded-md bg-black/40 text-white
                        border border-white/15 focus:outline-none
-                       focus:ring-1 focus:ring-sky-400'
+                       focus:ring-1 focus:ring-sky-400"
           />
         </div>
 
         {/* Min group size */}
-        <div className='min-w-[120px]'>
-          <label className='block text-[11px] font-medium text-white/60 mb-1'>
-            Min group size
-          </label>
+        <div className="min-w-[120px]">
+          <label className="block text-[11px] font-medium text-white/60 mb-1">Min group size</label>
           <input
-            type='number'
+            type="number"
             value={minSize}
             onChange={(e) => onMinSizeChange(Number(e.target.value || 0))}
-            className='w-full h-9 px-2 rounded-md bg-black/40 text-white
+            className="w-full h-9 px-2 rounded-md bg-black/40 text-white
                        border border-white/15 focus:outline-none
-                       focus:ring-1 focus:ring-sky-400'
+                       focus:ring-1 focus:ring-sky-400"
           />
         </div>
 
         {/* Group by (mode) */}
-        <div className='min-w-[180px]'>
-          <label className='block text-[11px] font-medium text-white/60 mb-1'>
-            Group by
-          </label>
-          <div className='flex items-center gap-2'>
+        <div className="min-w-[180px]">
+          <label className="block text-[11px] font-medium text-white/60 mb-1">Group by</label>
+          <div className="flex items-center gap-2">
             <button
-              type='button'
+              type="button"
               className={
                 'px-3 h-9 rounded-md text-sm font-medium border ' +
                 (mode === 'company'
@@ -126,7 +118,7 @@ export default function Toolbar({
               Company
             </button>
             <button
-              type='button'
+              type="button"
               className={
                 'px-3 h-9 rounded-md text-sm font-medium border ' +
                 (mode === 'title'

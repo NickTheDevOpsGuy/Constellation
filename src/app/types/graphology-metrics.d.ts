@@ -9,8 +9,5 @@ declare module 'graphology-metrics/centrality/pageRank' {
     maxIterations?: number;
   }
 
-  export default function pageRank(
-    graph: Graph,
-    options?: PageRankOptions
-  ): Record<string, number>;
+  export default function pageRank(graph: Graph, options?: PageRankOptions): Record<string, number>;
 }
