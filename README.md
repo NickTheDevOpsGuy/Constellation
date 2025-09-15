@@ -15,13 +15,17 @@ _Visualize your LinkedIn network like a constellation — built with React, Type
 ## 🚀 What’s Next
 
 <!-- START:NEXT_STEPS -->
+
 _Nothing cooking right now 💤_
+
 <!-- END:NEXT_STEPS -->
 
 ## 🏆 Achievements Lately
 
 <!-- START:ACHIEVEMENTS -->
+
 _No wins logged yet 🎯_
+
 <!-- END:ACHIEVEMENTS -->
 
 ---
