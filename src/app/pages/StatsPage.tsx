@@ -222,9 +222,11 @@ export default function StatsPage() {
 
   if (raw.length === 0) {
     return (
-      <div className="min-h-[calc(100vh-56px)] bg-gradient-to-b from-[#0b1220] via-[#0f1a2d] to-[#1a1f3a] flex items-center justify-center px-4">
-        <p className="text-slate-400">
-          No data yet. Go to <span className="font-medium text-slate-200">Import</span> and upload a CSV.
+      <div className='min-h-[calc(100vh-56px)] bg-gradient-to-b from-[#0b1220] via-[#0f1a2d] to-[#1a1f3a] flex items-center justify-center px-4'>
+        <p className='text-slate-400'>
+          No data yet. Go to{' '}
+          <span className='font-medium text-slate-200'>Import</span> and upload
+          a CSV.
         </p>
       </div>
     );
