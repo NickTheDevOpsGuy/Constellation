@@ -1,10 +1,16 @@
-// src/app/types/cgrapholog-metrics-d.ts
-declare module 'graphology-metrics/community/modularity' {
-  import { Graph } from 'graphology-types';
-  function modularity(
+// src/app/types/graphology-metrics.d.ts
+import { Graph, Attributes } from 'graphology';
+
+declare module 'graphology-metrics/centrality/pageRank' {
+  interface PageRankOptions {
+    attributes?: Attributes;
+    getEdgeWeight?: (edge: string, attr: Attributes) => number;
+    tolerance?: number;
+    maxIterations?: number;
+  }
+
+  export default function pageRank(
     graph: Graph,
-    communities: Record<string, number>,
-    options?: { getEdgeWeight?: (edge: string, attr: any) => number }
-  ): number;
-  export default modularity;
+    options?: PageRankOptions
+  ): Record<string, number>;
 }
