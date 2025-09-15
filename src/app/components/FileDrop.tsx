@@ -71,43 +71,43 @@ export default function FileDrop({
       onDragLeave={() => setDragOver(false)}
       onDrop={handleDrop}
       className={`${boxBase} ${boxTheme}`}
-      role="region"
-      aria-label="File drop zone"
+      role='region'
+      aria-label='File drop zone'
     >
       {/* Icon + helper copy */}
-      <div className="text-5xl mb-4 select-none">📦</div>
+      <div className='text-5xl mb-4 select-none'>📦</div>
 
-      <p className="text-slate-100 font-medium">
-        Drop your LinkedIn export <code className="font-mono">.zip</code>
+      <p className='text-slate-100 font-medium'>
+        Drop your LinkedIn export <code className='font-mono'>.zip</code>
       </p>
-      <p className="text-sm text-slate-300 mt-1">
+      <p className='text-sm text-slate-300 mt-1'>
         We’ll auto-extract the files needed for you.
       </p>
 
       {/* Hidden file input */}
       <input
         ref={inputRef}
-        type="file"
-        accept=".zip"
-        className="sr-only"
+        type='file'
+        accept='.zip'
+        className='sr-only'
         onChange={handleBrowse}
       />
 
       {/* Browse button */}
-      <div className="mt-5">
+      <div className='mt-5'>
         <button
-          type="button"
+          type='button'
           onClick={() => inputRef.current?.click()}
           disabled={isLoading}
-          className="px-4 py-2 rounded-md border border-white/15 bg-slate-800 text-slate-100
+          className='px-4 py-2 rounded-md border border-white/15 bg-slate-800 text-slate-100
                      hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-500/50
-                     disabled:opacity-50"
+                     disabled:opacity-50'
         >
           Browse…
         </button>
       </div>
 
-      <p className="mt-3 text-xs text-slate-400">
+      <p className='mt-3 text-xs text-slate-400'>
         Drag &amp; drop a .zip here.
       </p>
     </div>

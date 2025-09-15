@@ -48,9 +48,9 @@ function buildSummary(rows: LinkedInRawRecord[]): PanelSummary {
 
 function Stat({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div className="flex flex-col items-start rounded-xl border border-white/10 bg-slate-950/50 backdrop-blur p-4">
-      <div className="text-xs text-slate-400">{label}</div>
-      <div className="text-xl font-semibold text-slate-100">{value ?? '—'}</div>
+    <div className='flex flex-col items-start rounded-xl border border-white/10 bg-slate-950/50 backdrop-blur p-4'>
+      <div className='text-xs text-slate-400'>{label}</div>
+      <div className='text-xl font-semibold text-slate-100'>{value ?? '—'}</div>
     </div>
   );
 }
@@ -61,8 +61,10 @@ export default function StatsPanel() {
 
   if (raw.length === 0) {
     return (
-      <p className="text-slate-400">
-        No data yet. Go to <span className="text-slate-200 font-medium">Import</span> and upload a CSV/ZIP.
+      <p className='text-slate-400'>
+        No data yet. Go to{' '}
+        <span className='text-slate-200 font-medium'>Import</span> and upload a
+        CSV/ZIP.
       </p>
     );
   }
@@ -70,12 +72,16 @@ export default function StatsPanel() {
   const n = (x: number) => x.toLocaleString();
 
   return (
-    <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4">
-      <Stat label="Total Connections" value={n(stats.total)} />
-      <Stat label="Unique Companies" value={n(stats.uniqueCompanies)} />
-      <Stat label="Unique Titles" value={n(stats.uniqueTitles)} />
-      {stats.firstDate && <Stat label="Earliest Connection" value={stats.firstDate} />}
-      {stats.lastDate && <Stat label="Latest Connection" value={stats.lastDate} />}
+    <div className='mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4'>
+      <Stat label='Total Connections' value={n(stats.total)} />
+      <Stat label='Unique Companies' value={n(stats.uniqueCompanies)} />
+      <Stat label='Unique Titles' value={n(stats.uniqueTitles)} />
+      {stats.firstDate && (
+        <Stat label='Earliest Connection' value={stats.firstDate} />
+      )}
+      {stats.lastDate && (
+        <Stat label='Latest Connection' value={stats.lastDate} />
+      )}
     </div>
   );
 }
