@@ -19,7 +19,7 @@ export default function NavBar() {
           to='/'
           className='font-semibold text-lg flex items-center gap-2 text-white'
         >
-          <span>🦝</span> <span>Constellation</span>
+          <span>🌌</span> <span>Constellation</span>
         </NavLink>
 
         <NavLink to='/' className={link}>
