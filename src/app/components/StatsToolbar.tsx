@@ -1,20 +1,15 @@
 // src/app/components/StatsToolbar.tsx
 'use client';
+
 import React from 'react';
 
 type Props = {
-  /** free-text search over company/title/name */
   filterText: string;
   onFilterTextChange: (t: string) => void;
-
-  /** date range (YYYY-MM-DD) */
   fromDate?: string;
-  onFromDateChange: (d: string) => void;
-
+  onFromDateChange: (t?: string) => void;
   toDate?: string;
-  onToDateChange: (d: string) => void;
-
-  className?: string;
+  onToDateChange: (t?: string) => void;
 };
 
 export default function StatsToolbar({
@@ -24,64 +19,50 @@ export default function StatsToolbar({
   onFromDateChange,
   toDate,
   onToDateChange,
-  className = '',
 }: Props) {
   return (
-    <div
-      className={`w-full max-w-4xl flex flex-wrap items-end gap-4 bg-white/70 backdrop-blur rounded-xl border p-4 ${className}`}
-      role='region'
-      aria-label='Stats filters'
-    >
-      {/* Search */}
-      <div className='flex-1 min-w-[220px]'>
-        <label
-          htmlFor='stb-search'
-          className='block text-sm font-medium text-gray-700 mb-1'
-        >
+    <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full">
+      {/* Search input takes up all remaining width */}
+      <div className="flex-1">
+        <label className="sr-only" htmlFor="stats-search">
           Search (company, title, or name)
         </label>
         <input
-          id='stb-search'
-          type='text'
+          id="stats-search"
+          type="text"
+          placeholder="e.g. google, engineer..."
           value={filterText}
           onChange={(e) => onFilterTextChange(e.target.value)}
-          placeholder='e.g. google, engineer…'
-          className='w-full border rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500'
+          className="w-full rounded-md border border-white/10 bg-slate-800/50 text-slate-100 placeholder-slate-400 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-600"
         />
       </div>
 
-      {/* From */}
-      <div className='min-w-[160px]'>
-        <label
-          htmlFor='stb-from'
-          className='block text-sm font-medium text-gray-700 mb-1'
-        >
-          From
-        </label>
-        <input
-          id='stb-from'
-          type='date'
-          value={fromDate ?? ''}
-          onChange={(e) => onFromDateChange(e.target.value)}
-          className='w-full border rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500'
-        />
-      </div>
-
-      {/* To */}
-      <div className='min-w-[160px]'>
-        <label
-          htmlFor='stb-to'
-          className='block text-sm font-medium text-gray-700 mb-1'
-        >
-          To
-        </label>
-        <input
-          id='stb-to'
-          type='date'
-          value={toDate ?? ''}
-          onChange={(e) => onToDateChange(e.target.value)}
-          className='w-full border rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500'
-        />
+      {/* Date range inputs */}
+      <div className="flex items-center gap-2">
+        <div>
+          <label className="sr-only" htmlFor="from-date">
+            From
+          </label>
+          <input
+            id="from-date"
+            type="date"
+            value={fromDate ?? ''}
+            onChange={(e) => onFromDateChange(e.target.value || undefined)}
+            className="rounded-md border border-white/10 bg-slate-800/50 text-slate-100 placeholder-slate-400 px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-600"
+          />
+        </div>
+        <div>
+          <label className="sr-only" htmlFor="to-date">
+            To
+          </label>
+          <input
+            id="to-date"
+            type="date"
+            value={toDate ?? ''}
+            onChange={(e) => onToDateChange(e.target.value || undefined)}
+            className="rounded-md border border-white/10 bg-slate-800/50 text-slate-100 placeholder-slate-400 px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-600"
+          />
+        </div>
       </div>
     </div>
   );

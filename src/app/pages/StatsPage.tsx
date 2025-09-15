@@ -18,6 +18,7 @@ type Stats = {
 
 type CountItem = { label: string; count: number };
 type KwSort = 'count' | 'alpha';
+type MonthPoint = { ym: string; count: number };
 
 function fmtISO(d: Date) {
   return d.toISOString().slice(0, 10);
@@ -41,7 +42,7 @@ function topCounts(
     .slice(0, topN)
     .map(([label, count]) => ({ label, count }));
 }
-function monthSeries(rows: LinkedInRawRecord[], monthsBack = 24) {
+function monthSeries(rows: LinkedInRawRecord[], monthsBack = 24): MonthPoint[] {
   const now = new Date();
   const start = new Date(
     now.getFullYear(),
@@ -87,18 +88,18 @@ function keywordBuckets(rows: LinkedInRawRecord[]) {
 }
 
 /* tiny SVG bar chart — dark-friendly */
-function MonthBars({ series }: { ym: string; count: number }[]) {
+function MonthBars({ series }: { series: MonthPoint[] }) {
   const W = 560;
   const H = 100;
   const pad = 8;
   const barGap = 2;
-  const max = Math.max(1, ...series.map((s) => s.count));
+  const max = Math.max(1, ...series.map((s: MonthPoint) => s.count));
   const n = series.length;
   const barW = Math.max(1, Math.floor((W - pad * 2 - barGap * (n - 1)) / n));
 
   return (
     <svg width={W} height={H} className='block'>
-      {series.map((s, i) => {
+      {series.map((s: MonthPoint, i: number) => {
         const h = Math.round((s.count / max) * (H - pad * 2) || 0);
         const x = pad + i * (barW + barGap);
         const y = H - pad - h;
@@ -188,7 +189,10 @@ export default function StatsPage() {
     [filtered]
   );
   const topTitles = useMemo(() => topCounts(filtered, 'title', 10), [filtered]);
-  const months = useMemo(() => monthSeries(filtered, 24), [filtered]);
+  const months = useMemo<MonthPoint[]>(
+    () => monthSeries(filtered, 24),
+    [filtered]
+  );
   const kw = useMemo(() => keywordBuckets(filtered), [filtered]);
 
   // Sortable keyword chips
@@ -218,15 +222,16 @@ export default function StatsPage() {
 
   if (raw.length === 0) {
     return (
-      <p className='text-slate-400'>
-        No data yet. Go to Import and upload a CSV.
-      </p>
+      <div className="min-h-[calc(100vh-56px)] bg-gradient-to-b from-[#0b1220] via-[#0f1a2d] to-[#1a1f3a] flex items-center justify-center px-4">
+        <p className="text-slate-400">
+          No data yet. Go to <span className="font-medium text-slate-200">Import</span> and upload a CSV.
+        </p>
+      </div>
     );
   }
 
   return (
     <div className='max-w-6xl mx-auto pt-8 sm:pt-10'>
-      {' '}
       {/* push page down under sticky header */}
       <h2 className='text-xl font-semibold mb-4 text-slate-100'>Stats</h2>
       <div className='rounded-xl border border-white/10 bg-slate-950/50 backdrop-blur p-4'>
