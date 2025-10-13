@@ -32,6 +32,15 @@ jobs:
       - name: 📦 Install dependencies
         run: npm ci
 
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔧 Build App (Vite)
+        run: npm run build
+
+      - name: 🧪 Run ESLint
+        run: npx eslint src --ext .js,.jsx,.ts,.tsx --cache
+
       - name: 🎨 Prettier — check formatting
         run: |
           npx prettier \
@@ -44,3 +53,4 @@ jobs:
 
       - name: 🛠️ TypeScript — type check
         run: npx tsc --noEmit --pretty false
+
