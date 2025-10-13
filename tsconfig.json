@@ -1,13 +1,20 @@
 {
   "compilerOptions": {
-    "target": "esnext",
-    "lib": ["dom", "es2015", "esnext"],
-    "module": "esnext",
+    "target": "ES2022",
+    "module": "ESNext",
     "moduleResolution": "bundler",
-    "strict": true,
     "jsx": "react-jsx",
+    "strict": true,
     "skipLibCheck": true,
-    "types": ["vite/client"]
+
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/app/*"],
+      "@components/*": ["src/app/components/*"],
+      "@hooks/*": ["src/app/hooks/*"],
+      "@lib/*": ["src/app/lib/*"],
+      "@types/*": ["src/app/types/*"]
+    }
   },
-  "include": ["src/**/*", "vite.config.ts"]
+  "include": ["src"]
 }
