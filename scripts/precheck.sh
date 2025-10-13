@@ -1,46 +1,34 @@
-#!/bin/bash
-# Skip checks if the latest commit has [skip-precheck]
-LAST_COMMIT_MSG=$(git log -1 --pretty=%B)
+#!/usr/bin/env bash
+# Abort on error, unset vars, or pipeline failures
+set -euo pipefail
+
+# Repo root
+cd "$(git rev-parse --show-toplevel)"
+
+# Optional: allow skipping with tag
+LAST_COMMIT_MSG="$(git log -1 --pretty=%B || true)"
 if echo "$LAST_COMMIT_MSG" | grep -qi '\[skip-precheck\]'; then
-  echo "⚠️ Skipping pre-push checks due to [skip-precheck] tag in last commit."
+  echo "⚠️  Skipping pre-push checks due to [skip-precheck] tag."
   exit 0
 fi
 
-echo "🔍 Running Pre-PR Security & Code Quality Checks..."
+echo "🔍 Running Pre-Push Quality Gate..."
 
-# Exit immediately on error
-set -e
-
-# Check for required tools
-REQUIRED_TOOLS=("prettier" "eslint")
-
-for tool in "${REQUIRED_TOOLS[@]}"; do
-  if ! command -v $tool &> /dev/null; then
-    echo "❌ $tool is not installed. Please install it before pushing."
-    exit 1
-  fi
-done
-
-
-# Check for empty files in the entire repository
-echo "📂 Checking for empty files in commits being pushed..."
-
-# Files we allow to be empty (placeholders, etc.)
-ALLOW_EMPTY_REGEX='(^|/)\.gitkeep$|(^|/)\.keep$'
-
-# Get the base commit for comparison
-# If there's an upstream branch, use that; otherwise, compare against the last commit
+# -------- Empty file check (same behavior you had), scoped to changes --------
+echo "📂 Checking for empty files..."
+UPSTREAM="$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || true)"
 if [ -n "$UPSTREAM" ]; then
-  BASE=$(git merge-base HEAD "$UPSTREAM")
-  FILES_TO_CHECK=$(git diff --name-only --diff-filter=AM "$BASE"..HEAD)
+  BASE="$(git merge-base HEAD "$UPSTREAM")"
+  FILES_TO_CHECK="$(git diff --name-only --diff-filter=AM "$BASE"..HEAD)"
 else
-  echo "⚠️ No upstream configured (first push) — scanning entire repo..."
-  FILES_TO_CHECK=$(git ls-files)
+  echo "⚠️  No upstream configured — scanning entire repo..."
+  FILES_TO_CHECK="$(git ls-files)"
 fi
 
+ALLOW_EMPTY_REGEX='(^|/)\.gitkeep$|(^|/)\.keep$'
 EMPTY_FILES=""
 while IFS= read -r file; do
-  [ -z "$file" ] && continue
+  [ -z "${file:-}" ] && continue
   if echo "$file" | grep -Eq "$ALLOW_EMPTY_REGEX"; then
     continue
   fi
@@ -50,58 +38,35 @@ while IFS= read -r file; do
 done <<< "$FILES_TO_CHECK"
 
 if [ -n "$EMPTY_FILES" ]; then
-  echo -e "🛑 Empty files detected:\n"
-  printf "%s" "$EMPTY_FILES"
-  echo -e "\nPlease remove them or add content before pushing.\n"
+  echo -e "🛑 Empty files detected:\n$EMPTY_FILES\nPlease remove or fill them."
   exit 1
 fi
+echo "✅ No empty files found."
 
-echo -e "✅ No empty files found.\n"
-
-
-# 1. Format check & fix
-echo "🎨 Running Prettier..."
-CHANGED_FILES=$(npx prettier --config .prettierrc.yml --write --list-different .)
-if [ -n "$CHANGED_FILES" ]; then
-  echo -e "💾 Prettier made changes to the following files:\n"
-  echo -e "$CHANGED_FILES\n"
-  git add $CHANGED_FILES
-  git commit -m "style: auto-format code with Prettier [skip-precheck]"
-
-  echo -e "🛑 Formatting changes committed. Please review and push again.\n"
-  exit 1
-else
-  echo -e "✅ Prettier passed.\n"
-fi
-
-# 2. ESLint check & fix
-echo "🧹 Running ESLint..."
-if ! npx eslint . --max-warnings=0; then
-  echo -e "❌ ESLint errors found that could not be auto-fixed. Aborting push.\n"
+# -------- Prettier (check → auto-fix & stop) --------
+echo "🎨 Prettier — check"
+if ! npx --no-install prettier --config .prettierrc.yml --ignore-path .prettierignore --check .; then
+  echo "💾 Prettier — writing fixes..."
+  npx --no-install prettier --config .prettierrc.yml --ignore-path .prettierignore --write .
+  git add -A
+  git commit -m "style: auto-format with Prettier [skip-precheck]"
+  echo "🛑 Prettier fixed files and committed. Push again."
   exit 1
 fi
-echo -e "✅ ESLint passed.\n"
+echo "✅ Prettier passed."
 
-# 3. Commit any Prettier or lint changes if they exist
-if ! git diff --cached --quiet || ! git diff --quiet; then
-  echo "💾 Committing Prettier or lint fixes..."
-  git add .
-  git commit -m "style: auto-fix linting and formatting issues [skip-precheck]"
+# -------- ESLint (cached src) --------
+echo "🧪 ESLint (cached, src)..."
+npx --no-install eslint src --ext .js,.jsx,.ts,.tsx --cache
 
-  echo -e "🛑 Formatting fixes committed. Please review and push again.\n"
-  exit 1
-else
-  echo -e "✅ No changes to commit.\n"
-fi
+# -------- ESLint (strict, repo root) --------
+echo "✨ ESLint (strict)..."
+npx --no-install eslint . --max-warnings=0
+echo "✅ ESLint passed."
 
-# 5. ts check & fix
-echo "🧹 Running ts check..."
-if ! npx tsc --noEmit --pretty false; then
-  echo -e "❌ tsc errors found that could not be auto-fixed. Aborting push.\n"
-  exit 1
-fi
-echo -e "✅ ESLint passed.\n"
+# -------- TypeScript --------
+echo "🛠️ TypeScript — type check"
+npx --no-install tsc --noEmit --pretty false
+echo "✅ TypeScript passed."
 
-echo -e "🚀 All checks passed. Ready to push!\n"
-
-
+echo "🚀 All checks passed. Ready to push!"

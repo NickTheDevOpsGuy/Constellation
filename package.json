@@ -21,7 +21,12 @@
     "check:fix": "npm run format && npm run lint:fix",
     "tscheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json --noEmit",
     "precheck": "bash ./scripts/precheck.sh",
-    "prepare": "husky"
+    "prepare": "husky",
+    "fmt:check": "prettier --config .prettierrc.yml --ignore-path .prettierignore --check .",
+    "fmt:write": "prettier --config .prettierrc.yml --ignore-path .prettierignore --write .",
+    "lint:eslint": "eslint src --ext .js,.jsx,.ts,.tsx --cache",
+    "lint:eslint:strict": "eslint . --max-warnings=0",
+    "typecheck": "tsc --noEmit --pretty false"
   },
   "dependencies": {
     "@formkit/auto-animate": "^0.8.2",
