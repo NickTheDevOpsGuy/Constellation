@@ -1,5 +1,5 @@
 # .github/workflows/linkmap-ci.yml
-name: 🗺️ LinkMap — CI (Prettier · ESLint · TSC)
+name: 🗺️ Constellation — CI (Prettier · ESLint · TSC)
 
 on:
   push:
