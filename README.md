@@ -12,6 +12,22 @@ _Visualize your LinkedIn network like a constellation — built with React, Type
 
 ---
 
+## 🖼 Preview
+
+### Main App
+
+![LinkMap Screenshot](Screenshots/main.png)
+
+### Filters Stats
+
+![Filter Stats](Screenshots/stats.png)
+
+### Graph of Stats
+
+![Filter Stats](Screenshots/graph.png)
+
+---
+
 ## 🚀 Features
 
 - 📥 **Import CSV**  
@@ -100,22 +116,6 @@ Clone the repo and install dependencies:
 2. Install deps: `npm install`
 3. Start dev: `npm run dev`
 4. Then open `http://localhost:5173` in your browser.
-
----
-
-## 🖼 Preview
-
-### Main App
-
-![LinkMap Screenshot](Screenshots/main.png)
-
-### Filters Stats
-
-![Filter Stats](Screenshots/stats.png)
-
-### Graph of Stats
-
-![Filter Stats](Screenshots/graph.png)
 
 ---
 
