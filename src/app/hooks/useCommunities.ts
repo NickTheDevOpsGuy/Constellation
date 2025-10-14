@@ -76,13 +76,11 @@ export function useCommunities() {
     (graph: GraphData) => {
       const { communities, modularity, counts } = compute(graph);
       const nodes: AnyNode[] = graph.nodes.map((n) =>
-        isPerson(n)
-          ? ({ ...n, communityId: communities[String(n.id)] ?? -1 } as AnyNode)
-          : n
+        isPerson(n) ? ({ ...n, communityId: communities[String(n.id)] ?? -1 } as AnyNode) : n,
       );
       return { graph: { ...graph, nodes }, modularity, counts };
     },
-    [compute]
+    [compute],
   );
 
   return {

@@ -49,8 +49,7 @@ export const hasArrow = (t?: EdgeType) =>
   t === 'reacted';
 
 /** NEW: inferred edges (we’ll draw dashed in 2D) */
-export const isInferred = (t?: EdgeType) =>
-  t === 'co_company' || t === 'co_title';
+export const isInferred = (t?: EdgeType) => t === 'co_company' || t === 'co_title';
 
 /** NEW: weight-aware width scaling */
 export const widthWithWeight = (t?: EdgeType, weight?: number) => {
