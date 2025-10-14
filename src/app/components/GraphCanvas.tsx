@@ -2,7 +2,11 @@
 'use client';
 
 import React, { useMemo, useRef, useEffect } from 'react';
-import ForceGraph2D, { ForceGraphMethods, NodeObject, LinkObject } from 'react-force-graph-2d';
+import ForceGraph2D, {
+  ForceGraphMethods,
+  NodeObject,
+  LinkObject,
+} from 'react-force-graph-2d';
 import type { GraphData, PersonNode, PostNode } from '../types/linkedin';
 
 export type GraphDimension = '2d' | '3d';
@@ -104,7 +108,8 @@ export default function GraphCanvas({
   className,
 }: Props) {
   const fgRef = useRef<
-    ForceGraphMethods<NodeObject<ForceNode>, LinkObject<ForceNode, ForceLink>> | undefined
+    | ForceGraphMethods<NodeObject<ForceNode>, LinkObject<ForceNode, ForceLink>>
+    | undefined
   >(undefined);
 
   // Build graph data (typed) and degree
@@ -139,11 +144,16 @@ export default function GraphCanvas({
 
   const nodeLabel = (n: ForceNode): string => {
     if (labelMode === 'none') return '';
-    if (isPerson(n as PersonNode | PostNode)) return personTooltip(n as PersonNode);
+    if (isPerson(n as PersonNode | PostNode))
+      return personTooltip(n as PersonNode);
     return 'Post';
   };
 
-  const drawNode = (node: ForceNode, ctx: CanvasRenderingContext2D, scale: number) => {
+  const drawNode = (
+    node: ForceNode,
+    ctx: CanvasRenderingContext2D,
+    scale: number
+  ) => {
     const degree = node.degree ?? 0;
     const baseR = 3 + Math.sqrt(degree) * 0.9;
     const r = Math.max(4, Math.min(14, baseR));
@@ -167,10 +177,15 @@ export default function GraphCanvas({
     ctx.stroke();
 
     // Label
-    const show = labelMode === 'always' || (labelMode === 'zoom' && scale > 1.4) || degree >= 10;
+    const show =
+      labelMode === 'always' ||
+      (labelMode === 'zoom' && scale > 1.4) ||
+      degree >= 10;
     if (show) {
       const text = isPerson(node as PersonNode | PostNode)
-        ? [(node as PersonNode).firstName, (node as PersonNode).lastName].filter(Boolean).join(' ')
+        ? [(node as PersonNode).firstName, (node as PersonNode).lastName]
+            .filter(Boolean)
+            .join(' ')
         : 'Post';
       if (text) {
         ctx.font = `${Math.max(8, 14 / (scale * 0.9))}px ui-sans-serif, system-ui, -apple-system`;
@@ -185,7 +200,8 @@ export default function GraphCanvas({
   };
 
   // Brighter, thicker links so they are clearly visible
-  const linkColor = (l: ForceLink) => EDGE_COLOR[l.type ?? 'connection'] ?? '#C9CED6';
+  const linkColor = (l: ForceLink) =>
+    EDGE_COLOR[l.type ?? 'connection'] ?? '#C9CED6';
   const linkWidth = (l: ForceLink) =>
     Math.max(1.2, Math.min(2.8, 0.8 + Math.log2((l.weight ?? 1) + 1)));
   const linkCurvature = () => 0.15;
@@ -193,13 +209,21 @@ export default function GraphCanvas({
   // Subtle glow underneath link to improve contrast on dark bg
   const linkCanvasObject = (
     link: LinkObject<ForceNode, ForceLink>,
-    ctx: CanvasRenderingContext2D,
+    ctx: CanvasRenderingContext2D
   ) => {
     const l = link as unknown as ForceLink;
     const c = linkColor(l);
     const from = link.source as unknown as ForceNode;
     const to = link.target as unknown as ForceNode;
-    if (!from || !to || from.x == null || from.y == null || to.x == null || to.y == null) return;
+    if (
+      !from ||
+      !to ||
+      from.x == null ||
+      from.y == null ||
+      to.x == null ||
+      to.y == null
+    )
+      return;
 
     ctx.save();
     ctx.strokeStyle = c;
@@ -211,7 +235,7 @@ export default function GraphCanvas({
       (from.x + to.x) / 2 + 0.15 * (to.y - from.y),
       (from.y + to.y) / 2 + 0.15 * (from.x - to.x),
       to.x,
-      to.y,
+      to.y
     );
     ctx.stroke();
     ctx.restore();
@@ -233,10 +257,14 @@ export default function GraphCanvas({
       <ForceGraph2D
         ref={
           fgRef as React.MutableRefObject<
-            ForceGraphMethods<NodeObject<ForceNode>, LinkObject<ForceNode, ForceLink>> | undefined
+            | ForceGraphMethods<
+                NodeObject<ForceNode>,
+                LinkObject<ForceNode, ForceLink>
+              >
+            | undefined
           >
         }
-        nodeId="id"
+        nodeId='id'
         graphData={
           graphData as unknown as {
             nodes: NodeObject<ForceNode>[];
@@ -245,20 +273,32 @@ export default function GraphCanvas({
         }
         // TOOLTIP TEXTS
         nodeLabel={nodeLabel as unknown as (n: NodeObject<ForceNode>) => string}
-        linkLabel={(l: LinkObject<ForceNode, ForceLink>) => linkTooltip(l as unknown as ForceLink)}
+        linkLabel={(l: LinkObject<ForceNode, ForceLink>) =>
+          linkTooltip(l as unknown as ForceLink)
+        }
         // NODE RENDER
         nodeCanvasObject={
           drawNode as unknown as (
             node: NodeObject<ForceNode>,
             ctx: CanvasRenderingContext2D,
-            globalScale: number,
+            globalScale: number
           ) => void
         }
         // LINK RENDER + STYLING
-        linkColor={linkColor as unknown as (link: LinkObject<ForceNode, ForceLink>) => string}
-        linkWidth={linkWidth as unknown as (link: LinkObject<ForceNode, ForceLink>) => number}
+        linkColor={
+          linkColor as unknown as (
+            link: LinkObject<ForceNode, ForceLink>
+          ) => string
+        }
+        linkWidth={
+          linkWidth as unknown as (
+            link: LinkObject<ForceNode, ForceLink>
+          ) => number
+        }
         linkCurvature={
-          linkCurvature as unknown as (link: LinkObject<ForceNode, ForceLink>) => number
+          linkCurvature as unknown as (
+            link: LinkObject<ForceNode, ForceLink>
+          ) => number
         }
         linkCanvasObject={linkCanvasObject}
         linkDirectionalParticles={(l: LinkObject<ForceNode, ForceLink>) =>

@@ -13,19 +13,22 @@ export default function NavBar() {
     ].join(' ');
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-950/90 backdrop-blur border-b border-white/10 shadow">
-      <div className="h-14 px-6 flex items-center gap-6">
-        <NavLink to="/" className="font-semibold text-lg flex items-center gap-2 text-white">
+    <nav className='fixed top-0 left-0 right-0 z-50 bg-slate-950/90 backdrop-blur border-b border-white/10 shadow'>
+      <div className='h-14 px-6 flex items-center gap-6'>
+        <NavLink
+          to='/'
+          className='font-semibold text-lg flex items-center gap-2 text-white'
+        >
           <span>🌌</span> <span>Constellation</span>
         </NavLink>
 
-        <NavLink to="/" className={link}>
+        <NavLink to='/' className={link}>
           Import
         </NavLink>
-        <NavLink to="/graph" className={link}>
+        <NavLink to='/graph' className={link}>
           Graph
         </NavLink>
-        <NavLink to="/stats" className={link}>
+        <NavLink to='/stats' className={link}>
           Stats
         </NavLink>
       </div>
