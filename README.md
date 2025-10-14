@@ -2,7 +2,7 @@
 
 _Visualize your LinkedIn network like a constellation — built with React, TypeScript, and TailwindCSS._ 🦝
 
-[![CI](https://github.com/NickTheDevOpsGuy/Constellation/actions/workflows/constellation-ci.yml/badge.svg?branch=main)](https://github.com/NickTheDevOpsGuy/Constellation/actions/workflows/constellation-ci.yml)
+[![CI](https://github.com/NickTheDevOpsGuy/Constellation/actions/workflows/constellation-ci.yml/badge.svg)](https://github.com/NickTheDevOpsGuy/Constellation/actions/workflows/constellation-ci.yml)
 ![Built with React](https://img.shields.io/badge/Built%20with-React-61dafb?logo=react&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178c6?logo=typescript&logoColor=white)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-38bdf8?logo=tailwind-css&logoColor=white)
@@ -129,12 +129,16 @@ Clone the repo and install dependencies:
 ├── eslint.config.js
 ├── .github
 │   ├── ISSUE_TEMPLATE
-│   │   ├── bug_report.md
-│   │   └── feature_request.md
+│   │   ├── bug.yml
+│   │   ├── config.yml
+│   │   ├── documentation.yml
+│   │   ├── enhancement_refactor.yml
+│   │   ├── feature_request.yml
+│   │   └── question_discussion.yml
+│   ├── pull_request_template.md
 │   └── workflows
 │       ├── codeql.yml
-│       ├── constellation-ci.yml
-│       └── project-update.yml
+│       └── constellation-ci.yml
 ├── .gitignore
 ├── .husky
 │   ├── _
