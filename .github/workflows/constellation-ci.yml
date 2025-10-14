@@ -2,8 +2,9 @@
 name: 🗺️ Constellation — CI (Prettier · ESLint · TSC)
 
 on:
-  push:
   pull_request:
+    branches:
+      - develop
 
 concurrency:
   group: linkmap-${{ github.ref }}
