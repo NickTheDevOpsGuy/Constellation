@@ -1,6 +1,6 @@
 # 🌌 Constellation
 
-_Visualize your LinkedIn network like a constellation — built with React, TypeScript, and TailwindCSS._ 🦝
+_Visualize your LinkedIn network like a constellation — clusters, trends, and hidden relationships at a glance._ 🦝  
 
 [![CI](https://github.com/NickTheDevOpsGuy/Constellation/actions/workflows/constellation-ci.yml/badge.svg)](https://github.com/NickTheDevOpsGuy/Constellation/actions/workflows/constellation-ci.yml)
 ![Built with React](https://img.shields.io/badge/Built%20with-React-61dafb?logo=react&logoColor=white)
@@ -14,89 +14,107 @@ _Visualize your LinkedIn network like a constellation — built with React, Type
 
 ## 🖼 Preview
 
+A quick look at what Constellation renders from your LinkedIn export:
+
 ### Main App
 
 ![LinkMap Screenshot](Screenshots/main.png)
 
-### Filters Stats
+### Filter Stats
 
 ![Filter Stats](Screenshots/stats.png)
 
-### Graph of Stats
+### Interactive Graph
 
-![Filter Stats](Screenshots/graph.png)
+![Interactive Graph](Screenshots/graph.png)
+
+---
+
+## 🌐 Live Demo
+
+Try Constellation here: **https://constellation-alpha.vercel.app/**  
+Zero backend. All processing stays in your browser.
+
+---
+
+## 🔧 How It Works
+
+![Constellation Data Flow](Screenshots/flow.png)
+
+LinkedIn ZIP → CSV Parser → Normalized Rows → Graph Builder → UI
+
+Use it to understand the shape of your network — who you connect with most, how roles cluster, and where hidden opportunities live.
 
 ---
 
 ## 🚀 Features
 
-- 📥 **Import CSV**  
-  Upload your exported LinkedIn connections file directly (drag & drop) via your export `.zip` from LinkedIN.  
-  The parser cleans up preamble lines and normalizes fields like `First Name`, `Last Name`, `Company`, `Title`, and `Connected On`.
+### 📥 Import & Parse
+- Drag-and-drop your LinkedIn `.zip`
+- Automatic CSV cleanup & normalization  
+- Extracts names, titles, companies, dates, interactions (posts, comments, reactions)
 
-- 📊 **Stats Dashboard**
-  - 🔝 Top 5 companies in your network
-  - 🏷️ Top 5 titles across your connections
-  - 📅 Recent connection list (latest 5)
-  - 🔢 Total connection count
+### 📊 Stats Dashboard
+- Top companies & titles  
+- Latest 5 connections  
+- Total counts & quick summaries
 
-- 🛠️ **Toolbar Filters**
-  - 🔎 Search by company/title text
-  - 📅 Date range filter (from/to connection date)
-  - 📉 Minimum group size filter
-  - 🔀 Mode toggle: _Company_ vs _Title_ views
+### 🎛 Filters
+- Text search (company/title)
+- Date range
+- Minimum group size
+- Company / Title mode toggle
 
-- 🗺️ **Graph View**
-  - 🟦 One node per person (laid out in a circle for now)
-  - 🖱️ Pan & zoom controls
-  - 🏷️ Labels and tooltips with company + title info
-  - 🚧 Edges + clustering coming soon!
-
-- 🎨 **Clean UI**  
-  Built with TailwindCSS, responsive grid layouts, and a lightweight NavBar.
+### 🗺 Graph View
+- Zoom, pan, interactive nodes
+- Color-coded edges by relationship
+- Tooltips with rich metadata
+- Clustering coming soon
 
 ---
 
-## 🔒 Privacy ![Local Only](https://img.shields.io/badge/Data-Local%20Only-brightgreen?style=flat&logo=lock)
+## 🔒 Privacy First! 
+![Local Only](https://img.shields.io/badge/Data-Local%20Only-brightgreen?style=flat&logo=lock)
 
-This app is designed for **local use only**.
+Constellation is designed for 100% local use:
 
-- All processing (CSV import, parsing, graphing, and stats) happens **in your browser**.
-- No data is sent to any server, API, or third party.
-- Your LinkedIn export files stay entirely on your computer.
+- All parsing, graph building, and analytics happen in your browser
+- No servers, no uploads, no logs, no tracking
+- Ideal for sensitive career or professional datasets
 
-This means you can safely explore and visualize your network without worrying about your data being leaked or stored anywhere outside of your machine. 🚀
+Your LinkedIn data never leaves your machine.
 
 ---
 
 ## 🗓️ Roadmap
 
-- 🌐 **Multi-Dataset Support**
-  - Import and compare multiple LinkedIn exports side-by-side (e.g. personal vs company account).
+### 🌐 Multi-Dataset Support
 
-- 🕵️ **Advanced Analytics**
-  - Detect clusters/communities automatically (Louvain, modularity, etc.)
-  - Highlight most central people (betweenness, PageRank, degree centrality)
+- Compare different exports (e.g., before/after job changes).
 
-- 🖼️ **Enhanced Visualization**
-  - Mini-map navigator for large graphs
-  - “Zoom to node” search (jump directly to a person)
-  - Improved tooltips with profile photos or richer LinkedIn fields
-  - Dark mode polish with theme toggle
+### 🧠 Advanced Analytics
 
-- 🛠️ **Better Edge Insights**
-  - Edge weighting by frequency of interaction
-  - Animate recent edges or fade inactive ones
-  - Optional curved edges with arrow directions for clarity
+- Community detection (Louvain/modularity)
+- Centrality scoring (PageRank, betweenness, degree)
 
-- 📤 **Export Options**
-  - Export filtered views as CSV
-  - Share interactive web snapshots (hosted HTML, not just PNG/JSON)
+### 🖼 Visualization Upgrades
 
-- 🔑 **Integration Ideas**
-  - Supabase / SQLite backend to store imports
-  - API to query connections programmatically
-  - Auth to save personal graphs securely in the cloud
+- Mini-map
+- “Jump to node” search
+- Richer tooltips
+- Profile photo support
+- Dark mode polish
+
+### 🔗 Edge Insights
+
+- Weighted edges (interactions, frequency, recency)
+- Curved or directional edges
+- Animation for timelines
+
+### 📤 Export / Sharing
+
+- Export filtered CSV
+- Share interactive snapshots (self-contained HTML)
 
 ---
 
@@ -231,8 +249,8 @@ Clone the repo and install dependencies:
 
 ## 🧑‍💻 Usage Tips
 
-- Export your LinkedIn data:  
-  _Me → Settings & Privacy → Data Privacy → Get a copy of your data → Connections CSV_
+- Get your data:
+LinkedIn → Settings → Data Privacy → Get a copy → Connections CSV
 - Drag the `ZIP` into the Import screen
 - Switch to **Stats** or **Graph** via the nav bar
 - Click names in the table or nodes in the graph to jump to their profile 🎯
