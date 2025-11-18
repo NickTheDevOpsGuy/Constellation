@@ -1,6 +1,6 @@
 # 🌌 Constellation
 
-_Visualize your LinkedIn network like a constellation — clusters, trends, and hidden relationships at a glance._ 🦝  
+_Visualize your LinkedIn network like a constellation — clusters, trends, and hidden relationships at a glance._ 🦝
 
 [![CI](https://github.com/NickTheDevOpsGuy/Constellation/actions/workflows/constellation-ci.yml/badge.svg)](https://github.com/NickTheDevOpsGuy/Constellation/actions/workflows/constellation-ci.yml)
 ![Built with React](https://img.shields.io/badge/Built%20with-React-61dafb?logo=react&logoColor=white)
@@ -50,22 +50,26 @@ Use it to understand the shape of your network — who you connect with most, ho
 ## 🚀 Features
 
 ### 📥 Import & Parse
+
 - Drag-and-drop your LinkedIn `.zip`
-- Automatic CSV cleanup & normalization  
+- Automatic CSV cleanup & normalization
 - Extracts names, titles, companies, dates, interactions (posts, comments, reactions)
 
 ### 📊 Stats Dashboard
-- Top companies & titles  
-- Latest 5 connections  
+
+- Top companies & titles
+- Latest 5 connections
 - Total counts & quick summaries
 
 ### 🎛 Filters
+
 - Text search (company/title)
 - Date range
 - Minimum group size
 - Company / Title mode toggle
 
 ### 🗺 Graph View
+
 - Zoom, pan, interactive nodes
 - Color-coded edges by relationship
 - Tooltips with rich metadata
@@ -73,7 +77,8 @@ Use it to understand the shape of your network — who you connect with most, ho
 
 ---
 
-## 🔒 Privacy First! 
+## 🔒 Privacy First!
+
 ![Local Only](https://img.shields.io/badge/Data-Local%20Only-brightgreen?style=flat&logo=lock)
 
 Constellation is designed for 100% local use:
@@ -250,7 +255,7 @@ Clone the repo and install dependencies:
 ## 🧑‍💻 Usage Tips
 
 - Get your data:
-LinkedIn → Settings → Data Privacy → Get a copy → Connections CSV
+  LinkedIn → Settings → Data Privacy → Get a copy → Connections CSV
 - Drag the `ZIP` into the Import screen
 - Switch to **Stats** or **Graph** via the nav bar
 - Click names in the table or nodes in the graph to jump to their profile 🎯
